@@ -4,19 +4,40 @@
   description = "axum-boilerplate";
 
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    rust-overlay.url = "github:oxalica/rust-overlay/stable";
+    cargo2nix = {
+      url = "github:cargo2nix/cargo2nix/release-0.12";
+      inputs.rust-overlay.follows = "rust-overlay";
+    };
+    flake-utils.follows = "cargo2nix/flake-utils";
+    nixpkgs.follows = "cargo2nix/nixpkgs";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = inputs: with inputs;
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [cargo2nix.overlays.default];
+        };
+
+        cargo2nixPackages = cargo2nix.packages.${system};
+
+        rustPkgs = pkgs.rustBuilder.makePackageSet {
+          rustVersion = "1.91.0";
+          packageFun = import ./Cargo.nix;
+        };
+      in rec
       {
+        packages = {
+          axum-boilerplate = (rustPkgs.workspace.axum-boilerplate {});
+          default = packages.axum-boilerplate;
+        };
+
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; [
-            # gcc
+          packages = [
+            cargo2nixPackages.cargo2nix
             # openssl
             # postgresql
             # sqlite
