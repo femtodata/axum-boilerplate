@@ -140,8 +140,13 @@ pub async fn get_logout(
 }
 
 pub async fn get_index(
+    jar: PrivateCookieJar,
     State(env): State<Environment<'static>>,
 ) -> Result<Html<String>, WebappError> {
+    if let Some(user) = jar.get("user") {
+        info!("logged in user: {:#?}", user);
+    }
+
     let template = env.get_template("home")?;
 
     let rendered = template.render(context! {

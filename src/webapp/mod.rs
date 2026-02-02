@@ -113,10 +113,10 @@ pub async fn run_server() {
 
     let app = Router::new()
         .route("/", get(handlers::get_index))
-        .route_layer(middleware::from_fn_with_state(
-            app_state.clone(),
-            handlers::check_auth,
-        ))
+        // .route_layer(middleware::from_fn_with_state(
+        //     app_state.clone(),
+        //     handlers::check_auth,
+        // ))
         .route("/login", get(handlers::get_login))
         .route("/login", post(handlers::post_login))
         .route("/logout", get(handlers::get_logout))
