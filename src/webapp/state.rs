@@ -2,7 +2,7 @@ use std::{collections::HashMap, ops::Deref, sync::Arc};
 
 use axum::extract::FromRef;
 use axum_extra::extract::cookie::Key;
-use minijinja::Environment;
+use tera::Tera;
 
 use super::sso::OauthClient;
 
@@ -11,7 +11,7 @@ use super::sso::OauthClient;
 pub struct AppState(pub Arc<InnerState>);
 
 pub struct InnerState {
-    pub env: Environment<'static>,
+    pub tera: Tera,
     pub oauth_client_map: HashMap<String, OauthClient>,
     pub key: Key,
 }
@@ -37,8 +37,8 @@ impl FromRef<AppState> for HashMap<String, OauthClient> {
     }
 }
 
-impl FromRef<AppState> for Environment<'_> {
+impl FromRef<AppState> for Tera {
     fn from_ref(state: &AppState) -> Self {
-        state.0.env.clone()
+        state.0.tera.clone()
     }
 }

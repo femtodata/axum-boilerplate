@@ -8,9 +8,9 @@ use axum::{
     routing::{get, post},
 };
 use axum_extra::extract::cookie::Key;
-use minijinja::Environment;
 use rand::distr::{Alphanumeric, SampleString};
 use state::{AppState, InnerState};
+use tera::Tera;
 use tokio::net::TcpListener;
 use tracing::info;
 
@@ -25,7 +25,7 @@ pub enum WebappError {
     // template errors
     // ---------------
     #[error(transparent)]
-    MinijinjaError(#[from] minijinja::Error),
+    TeraError(#[from] tera::Error),
 
     // sso errors
     // ----------
@@ -87,7 +87,14 @@ pub async fn run_server() {
 
     get_config();
 
-    let env = add_templates();
+    let tera = match Tera::new("src/webapp/templates/**/*.html") {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Parsing error(s): {}", e);
+            ::std::process::exit(1);
+        }
+    };
+
     let secret = env::var("SECRET").unwrap_or_else(|_| {
         info!("no secret in env, generating...");
         Alphanumeric.sample_string(&mut rand::rng(), 64)
@@ -106,7 +113,7 @@ pub async fn run_server() {
     ]);
 
     let app_state = AppState(Arc::new(InnerState {
-        env,
+        tera,
         oauth_client_map,
         key,
     }));
@@ -128,15 +135,7 @@ pub async fn run_server() {
     axum::serve(listener, app).await.unwrap();
 }
 
-fn add_templates<'a>() -> Environment<'a> {
-    let mut env = Environment::new();
-
-    env.add_template("login", include_str!("./templates/login.html"))
-        .unwrap();
-    env.add_template("layout", include_str!("./templates/layout.html"))
-        .unwrap();
-    env.add_template("home", include_str!("./templates/home.html"))
-        .unwrap();
-
-    env
+// fn add_templates<'a>() -> Environment<'a> {
+fn add_templates<'a>() {
+    todo!()
 }

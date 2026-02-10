@@ -9,7 +9,6 @@ use axum::{
 };
 use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
 use bcrypt::bcrypt;
-use minijinja::{Environment, context};
 use serde::Deserialize;
 use tracing::info;
 use url::Url;
@@ -38,10 +37,7 @@ pub async fn get_login(
         return Ok((jar, Redirect::to("/").into_response()));
     }
 
-    Ok((
-        jar,
-        render_login_with_context(state, minijinja::Value::UNDEFINED)?,
-    ))
+    Ok((jar, render_login_with_context(state, tera::Context::new())?))
 }
 
 #[derive(Deserialize, Debug, Validate)]
@@ -76,15 +72,9 @@ pub async fn post_login(
             .filter_map(|x| x.message.clone())
             .collect();
         let message = validation_messages.join("<br>");
-        return Ok((
-            jar,
-            render_login_with_context(
-                state,
-                context! {
-                    alert => message,
-                },
-            )?,
-        ));
+        let mut context = tera::Context::new();
+        context.insert("alert", &message);
+        return Ok((jar, render_login_with_context(state, context)?));
     }
 
     if let Some(user) = db::get_user_by_username(&login_payload.username) {
@@ -123,11 +113,9 @@ pub fn get_next_url_from_headers(headers: HeaderMap) -> String {
 
 pub fn render_login_with_context(
     state: AppState,
-    context: minijinja::Value,
-) -> Result<Response, minijinja::Error> {
-    let template = state.env.get_template("login")?;
-
-    let rendered = template.render(context)?;
+    context: tera::Context,
+) -> Result<Response, tera::Error> {
+    let rendered = state.tera.render("login.html", &context)?;
 
     Ok(Html(rendered).into_response())
 }
@@ -141,21 +129,17 @@ pub async fn get_logout(
 
 pub async fn get_index(
     jar: PrivateCookieJar,
-    State(env): State<Environment<'static>>,
+    State(tera): State<tera::Tera>,
 ) -> Result<Html<String>, WebappError> {
     if let Some(user) = jar.get("user") {
         info!("logged in user: {:#?}", user);
     }
 
-    let template = env.get_template("home")?;
+    let mut context = tera::Context::new();
+    context.insert("title", "Home");
+    context.insert("content", "STUFF GOES HERE");
 
-    let rendered = template.render(context! {
-        title => "Home",
-        content => "STUFF GOES HERE",
-        // welcome_text => "Congrats! Hypermedia!",
-        // df_values => DataFrameValues::from_df(&df),
-        // chart_url => "/chart",
-    })?;
+    let rendered = tera.render("home.html", &context)?;
 
     Ok(Html(rendered))
 }

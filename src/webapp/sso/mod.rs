@@ -8,7 +8,6 @@ use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum::routing::get;
 use axum_extra::extract::PrivateCookieJar;
 use axum_extra::extract::cookie::Cookie;
-use minijinja::context;
 use openidconnect::core::{
     CoreAuthDisplay, CoreAuthPrompt, CoreErrorResponseType, CoreGenderClaim, CoreJsonWebKey,
     CoreJweContentEncryptionAlgorithm, CoreJwsSigningAlgorithm, CoreRevocableToken, CoreTokenType,
@@ -150,12 +149,11 @@ async fn get_sso_callback(
         // return Err(WebappError::NoMatchingUserError);
         return Ok((
             jar,
-            handlers::render_login_with_context(
-                state,
-                context! {
-                    alert => "No registered user found."
-                },
-            )?,
+            handlers::render_login_with_context(state, {
+                let mut context = tera::Context::new();
+                context.insert("alert", "No registered user found");
+                context
+            })?,
         ));
     };
 
