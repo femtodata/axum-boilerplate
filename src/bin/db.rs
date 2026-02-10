@@ -166,7 +166,7 @@ fn edit_user(id: i32) {
     }
 
     if let Some(_) = email {
-        user.email = email;
+        user.email = Some(EmailAddress::new(email));
     }
 
     let user = diesel::update(users)
