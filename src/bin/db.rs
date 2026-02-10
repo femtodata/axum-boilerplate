@@ -91,7 +91,7 @@ fn create_new_user_from_prompt() {
     let new_user = NewUser {
         username: &username.trim(),
         hashed_password: hashed_password.as_ref().map(|x| x.as_ref()),
-        email: email.as_ref().map(|x| x.as_ref()),
+        email: email.as_ref(),
     };
 
     let user = diesel::insert_into(users::table)
@@ -165,8 +165,8 @@ fn edit_user(id: i32) {
         user.hashed_password = hashed_password;
     }
 
-    if let Some(raw_email) = email {
-        user.email = Some(EmailAddress::new(raw_email.as_str()).unwrap());
+    if let Some(_) = email {
+        user.email = email;
     }
 
     let user = diesel::update(users)
@@ -187,5 +187,5 @@ fn delete_user_by_id(id_to_delete: i32) {
         .execute(connection)
         .expect("Error while deleting user");
 
-    println!("delected {num_deleted} users");
+    println!("deleted {num_deleted} users");
 }

@@ -69,6 +69,6 @@ pub struct User {
 #[diesel(table_name = crate::db::schema::users)]
 pub struct NewUser<'a> {
     pub username: &'a str,
-    pub email: Option<&'a str>,
+    pub email: Option<&'a EmailAddress>,
     pub hashed_password: Option<&'a str>,
 }
