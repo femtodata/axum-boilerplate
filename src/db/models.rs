@@ -16,7 +16,7 @@ pub struct EmailAddress(String);
 impl FromSql<diesel::sql_types::Text, Pg> for EmailAddress {
     fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
         let string = String::from_utf8(bytes.as_bytes().to_vec())?;
-        Ok(EmailAddress::new(&string)?)
+        unsafe { Ok(EmailAddress::new_unchecked(&string)) }
     }
 }
 
@@ -47,6 +47,10 @@ impl EmailAddress {
         } else {
             Err(EmailAddressError(raw_email.into()))
         }
+    }
+
+    pub unsafe fn new_unchecked(raw_email: &str) -> Self {
+        Self(raw_email.to_string())
     }
 }
 

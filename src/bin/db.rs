@@ -123,21 +123,21 @@ fn prompt_and_hash_password(stdin: &mut StdinLock, stdout: &mut StdoutLock) -> O
     }
 }
 
-fn prompt_email(stdin: &mut StdinLock, stdout: &mut StdoutLock) -> Option<String> {
+fn prompt_email(stdin: &mut StdinLock, stdout: &mut StdoutLock) -> Option<EmailAddress> {
     stdout.write_all(b"email: ").unwrap();
     stdout.flush().unwrap();
-    let email = stdin.read_line().unwrap();
+    let raw_email = stdin.read_line().unwrap();
 
     stdout.write_all(b"\n").unwrap();
     stdout.flush().unwrap();
 
-    match email {
-        Some(email) => {
-            let email = email.trim();
+    match raw_email {
+        Some(raw_email) => {
+            let email = raw_email.trim();
             if email.len() == 0 {
                 return None;
             }
-            Some(email.to_string())
+            Some(EmailAddress::new(email).unwrap())
         }
         None => None,
     }
@@ -165,8 +165,8 @@ fn edit_user(id: i32) {
         user.hashed_password = hashed_password;
     }
 
-    if let Some(_) = email {
-        user.email = Some(EmailAddress::new(email));
+    if let Some(raw_email) = email {
+        user.email = Some(EmailAddress::new(raw_email.as_str()).unwrap());
     }
 
     let user = diesel::update(users)
