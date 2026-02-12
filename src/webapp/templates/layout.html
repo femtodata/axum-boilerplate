@@ -27,9 +27,15 @@
             <a href="#" class="nav-item nav-link active">Home</a>
             <a href="#" class="nav-item nav-link">Items</a>
           </div>
-          <div class="navbar-nav ms-auto">
-            <a href="/logout" class="nav-item nav-link">Logout</a>
-          </div>
+          {% if user %}
+            <div class="navbar-nav ms-auto">
+              <a href="/logout" class="nav-item nav-link">Logout</a>
+            </div>
+          {% else %}
+            <div class="navbar-nav ms-auto">
+              <a href="/login" class="nav-item nav-link">Login</a>
+            </div>
+          {% endif %}
         </div>
       </div>
     </nav>

@@ -131,11 +131,13 @@ pub async fn get_index(
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
 ) -> Result<Html<String>, WebappError> {
+    let mut context = tera::Context::new();
+
     if let Some(user) = jar.get("user") {
         info!("logged in user: {:#?}", user);
+        context.insert("user", &user.to_string())
     }
 
-    let mut context = tera::Context::new();
     context.insert("title", "Home");
     context.insert("content", "STUFF GOES HERE");
 
