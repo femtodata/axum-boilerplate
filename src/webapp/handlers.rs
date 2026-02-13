@@ -162,3 +162,25 @@ pub async fn check_auth(
 
     Ok(response)
 }
+
+pub async fn error_page(
+    State(tera): State<tera::Tera>,
+    request: Request,
+    next: Next,
+) -> Result<Response, WebappError> {
+    let response = next.run(request).await;
+
+    let status_code = response.status();
+
+    if status_code.is_server_error() || status_code.is_client_error() {
+        let mut context = tera::Context::new();
+
+        context.insert("content", "Something broke");
+
+        let rendered = tera.render("error.html", &context)?;
+
+        Ok(Html(rendered).into_response())
+    } else {
+        Ok(response)
+    }
+}

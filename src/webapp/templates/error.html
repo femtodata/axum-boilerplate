@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %} 
+  {% if title %}
+    {{ title }}
+  {% else %}
+    Error
+  {% endif %}
+{% endblock %}
+{% block body %}
+{{ content }}
+{% endblock %}

@@ -80,7 +80,7 @@ impl IntoResponse for WebappError {
     fn into_response(self) -> axum::response::Response {
         tracing::error!("WebappError: {:#?}", self);
         println!("WebappError: {:#?}", self);
-        (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong").into_response()
+        (StatusCode::INTERNAL_SERVER_ERROR, format!("{:#?}", self)).into_response()
     }
 }
 
@@ -115,7 +115,14 @@ pub async fn run_server() {
         .route("/login", post(handlers::post_login))
         .route("/logout", get(handlers::get_logout))
         .merge(sso::sso_router())
-        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
+        .layer(
+            ServiceBuilder::new()
+                .layer(TraceLayer::new_for_http())
+                .layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    handlers::error_page,
+                )),
+        )
         .with_state(app_state);
 
     let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();
