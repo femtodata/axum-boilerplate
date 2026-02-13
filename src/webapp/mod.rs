@@ -101,22 +101,7 @@ pub async fn run_server() {
     });
     let key = Key::from(secret.as_bytes());
 
-    let oauth_client_map = HashMap::from([
-        (
-            "microsoft".to_string(),
-            sso::microsoft_sso::oauth_client().await.unwrap(),
-        ),
-        (
-            "google".to_string(),
-            sso::google_sso::oauth_client().await.unwrap(),
-        ),
-    ]);
-
-    let app_state = AppState(Arc::new(InnerState {
-        tera,
-        oauth_client_map,
-        key,
-    }));
+    let app_state = AppState(Arc::new(InnerState { tera, key }));
 
     let app = Router::new()
         .route("/", get(handlers::get_index))

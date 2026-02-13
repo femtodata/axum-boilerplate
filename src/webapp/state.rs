@@ -4,15 +4,12 @@ use axum::extract::FromRef;
 use axum_extra::extract::cookie::Key;
 use tera::Tera;
 
-use super::sso::OauthClient;
-
 // AppState shenanigans, because CookieJar
 #[derive(Clone)]
 pub struct AppState(pub Arc<InnerState>);
 
 pub struct InnerState {
     pub tera: Tera,
-    pub oauth_client_map: HashMap<String, OauthClient>,
     pub key: Key,
 }
 
@@ -28,12 +25,6 @@ impl Deref for AppState {
 impl FromRef<AppState> for Key {
     fn from_ref(state: &AppState) -> Self {
         state.0.key.clone()
-    }
-}
-
-impl FromRef<AppState> for HashMap<String, OauthClient> {
-    fn from_ref(state: &AppState) -> Self {
-        state.0.oauth_client_map.clone()
     }
 }
 

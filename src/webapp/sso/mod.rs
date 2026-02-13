@@ -68,15 +68,20 @@ pub fn sso_router() -> Router<AppState> {
     route
 }
 
+async fn get_oauth_client(provider: &str) -> Result<OauthClient, WebappError> {
+    match provider {
+        "microsoft" => microsoft_sso::oauth_client().await,
+        "google" => google_sso::oauth_client().await,
+        _ => Err(WebappError::MissingOauthClientError),
+    }
+}
+
 async fn get_sso_login(
     Path(provider): Path<String>,
-    State(client_map): State<HashMap<String, OauthClient>>,
     headers: HeaderMap,
     jar: PrivateCookieJar,
 ) -> Result<(PrivateCookieJar, impl IntoResponse), WebappError> {
-    let client = client_map
-        .get(&provider)
-        .ok_or_else(|| WebappError::MissingOauthClientError)?;
+    let client = get_oauth_client(&provider).await?;
 
     let (authorize_url, _csrf_state, _nonce) = client
         .authorize_url(
@@ -108,19 +113,16 @@ fn always_verify_nonce(_nonce: Option<&Nonce>) -> Result<(), String> {
 async fn get_sso_callback(
     Query(params): Query<CallbackParams>,
     Path(provider): Path<String>,
-    State(client_map): State<HashMap<String, OauthClient>>,
     State(state): State<AppState>,
     jar: PrivateCookieJar,
 ) -> Result<(PrivateCookieJar, axum::http::Response<axum::body::Body>), WebappError> {
+    let client = get_oauth_client(&provider).await?;
+
     let http_client = reqwest::ClientBuilder::new()
         // Following redirects opens the client up to SSRF vulnerabilities.
         .redirect(reqwest::redirect::Policy::none())
         .build()
         .expect("HTTP Client should build");
-
-    let client = client_map
-        .get(&provider)
-        .ok_or_else(|| WebappError::MissingOauthClientError)?;
 
     let token_response = client
         .exchange_code(AuthorizationCode::new(params.code.clone()))?
