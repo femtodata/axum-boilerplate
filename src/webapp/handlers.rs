@@ -172,7 +172,7 @@ pub async fn error_page(
 
     let status_code = response.status();
 
-    if status_code.is_server_error() || status_code.is_client_error() {
+    if status_code.is_server_error() {
         let mut context = tera::Context::new();
 
         context.insert("content", "Something broke");
