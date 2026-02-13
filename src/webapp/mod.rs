@@ -12,6 +12,8 @@ use rand::distr::{Alphanumeric, SampleString};
 use state::{AppState, InnerState};
 use tera::Tera;
 use tokio::net::TcpListener;
+use tower::ServiceBuilder;
+use tower_http::trace::TraceLayer;
 use tracing::info;
 
 use crate::get_config;
@@ -113,6 +115,7 @@ pub async fn run_server() {
         .route("/login", post(handlers::post_login))
         .route("/logout", get(handlers::get_logout))
         .merge(sso::sso_router())
+        .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()))
         .with_state(app_state);
 
     let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();
