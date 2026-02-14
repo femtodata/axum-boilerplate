@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use dotenvy::dotenv;
 use models::User;
 use std::env;
@@ -14,12 +15,37 @@ pub fn establish_connection() -> PgConnection {
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
 
+pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL");
+    let manager = ConnectionManager::<PgConnection>::new(database_url);
+    let pool = Pool::builder()
+        .test_on_check_out(true)
+        .build(manager)
+        .expect("Could not build connection pool!");
+
+    println!("pool built");
+    pool
+}
+
 pub fn get_user_by_email(email: &str) -> Option<User> {
     let connection = &mut establish_connection();
 
     let user = schema::users::table
         .filter(schema::users::email.eq(email))
         .first(connection)
+        .optional()
+        .unwrap();
+
+    user
+}
+
+pub fn get_user_by_email_conn(
+    email: &str,
+    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
+) -> Option<User> {
+    let user = schema::users::table
+        .filter(schema::users::email.eq(email))
+        .first(conn)
         .optional()
         .unwrap();
 

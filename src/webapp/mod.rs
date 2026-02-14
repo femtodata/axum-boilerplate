@@ -16,7 +16,7 @@ use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 
-use crate::get_config;
+use crate::{db::get_connection_pool, get_config};
 
 mod handlers;
 mod sso;
@@ -101,9 +101,12 @@ pub async fn run_server() {
         info!("no secret in env, generating...");
         Alphanumeric.sample_string(&mut rand::rng(), 64)
     });
+
     let key = Key::from(secret.as_bytes());
 
-    let app_state = AppState(Arc::new(InnerState { tera, key }));
+    let pool = get_connection_pool();
+
+    let app_state = AppState(Arc::new(InnerState { tera, key, pool }));
 
     let app = Router::new()
         .route("/", get(handlers::get_index))
