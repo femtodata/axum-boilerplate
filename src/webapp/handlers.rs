@@ -77,7 +77,9 @@ pub async fn post_login(
         return Ok((jar, render_login_with_context(state, context)?));
     }
 
-    if let Some(user) = db::get_user_by_username(&login_payload.username) {
+    let mut conn = state.pool.clone().get().unwrap();
+
+    if let Some(user) = db::get_user_by_username(&login_payload.username, Some(&mut conn)) {
         // empty password means no password login
         if let Some(hashed_password) = user.hashed_password {
             if bcrypt::verify(login_payload.password, &hashed_password)

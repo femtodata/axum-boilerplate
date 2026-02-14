@@ -27,22 +27,12 @@ pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
     pool
 }
 
-pub fn get_user_by_email(email: &str) -> Option<User> {
-    let connection = &mut establish_connection();
+pub fn get_user_by_email(email: &str, conn: Option<&mut PgConnection>) -> Option<User> {
+    let conn = match conn {
+        Some(conn) => conn,
+        None => &mut establish_connection(),
+    };
 
-    let user = schema::users::table
-        .filter(schema::users::email.eq(email))
-        .first(connection)
-        .optional()
-        .unwrap();
-
-    user
-}
-
-pub fn get_user_by_email_conn(
-    email: &str,
-    conn: &mut PooledConnection<ConnectionManager<PgConnection>>,
-) -> Option<User> {
     let user = schema::users::table
         .filter(schema::users::email.eq(email))
         .first(conn)
@@ -52,12 +42,15 @@ pub fn get_user_by_email_conn(
     user
 }
 
-pub fn get_user_by_username(username: &str) -> Option<User> {
-    let connection = &mut establish_connection();
+pub fn get_user_by_username(username: &str, conn: Option<&mut PgConnection>) -> Option<User> {
+    let conn = match conn {
+        Some(conn) => conn,
+        None => &mut establish_connection(),
+    };
 
     let user = schema::users::table
         .filter(schema::users::username.eq(username))
-        .first(connection)
+        .first(conn)
         .optional()
         .unwrap();
 
@@ -70,7 +63,7 @@ mod tests {
 
     #[test]
     fn test_email() {
-        let user = get_user_by_email("alexou@gmail.com");
+        let user = get_user_by_email("alexou@gmail.com", None);
         println!("{user:#?}");
     }
 }

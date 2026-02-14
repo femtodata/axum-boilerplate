@@ -147,7 +147,7 @@ async fn get_sso_callback(
 
     let mut conn = state.pool.clone().get().unwrap();
 
-    let user = db::get_user_by_email_conn(email, &mut conn);
+    let user = db::get_user_by_email(email, Some(&mut conn));
 
     let Some(user) = user else {
         // return Err(WebappError::NoMatchingUserError);
