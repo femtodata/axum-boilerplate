@@ -96,7 +96,9 @@ pub async fn post_login(
         }
     };
 
-    Ok((jar, "login".into_response()))
+    let mut context = tera::Context::new();
+    context.insert("alert", "Wrong username or password");
+    Ok((jar, render_login_with_context(state, context)?))
 }
 
 pub fn get_next_url_from_headers(headers: HeaderMap) -> String {

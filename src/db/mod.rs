@@ -23,7 +23,6 @@ pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
         .build(manager)
         .expect("Could not build connection pool!");
 
-    println!("pool built");
     pool
 }
 
