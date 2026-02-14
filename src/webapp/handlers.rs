@@ -163,6 +163,7 @@ pub async fn check_auth(
     Ok(response)
 }
 
+// to be used with middleware::from_fn_with_state
 pub async fn error_page(
     State(tera): State<tera::Tera>,
     request: Request,
