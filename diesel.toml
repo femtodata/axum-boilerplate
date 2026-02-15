@@ -5,5 +5,5 @@
 file = "src/db/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
-[migrations_directory]
-dir = "/home/alexou/dev/axum-boilerplate/migrations"
+# [migrations_directory]
+# dir = "/home/alexou/dev/axum-boilerplate/migrations"
