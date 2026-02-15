@@ -145,7 +145,7 @@ async fn get_sso_callback(
     // println!("claims: {:#?}", claims);
     // println!("email: {}", email.as_str());
 
-    let mut conn = state.pool.clone().get().unwrap();
+    let mut conn = state.pool.clone().get()?;
 
     let user = db::get_user_by_email(email, Some(&mut conn));
 

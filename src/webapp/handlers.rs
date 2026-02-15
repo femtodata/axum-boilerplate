@@ -77,7 +77,7 @@ pub async fn post_login(
         return Ok((jar, render_login_with_context(state, context)?));
     }
 
-    let mut conn = state.pool.clone().get().unwrap();
+    let mut conn = state.pool.clone().get()?;
 
     if let Some(user) = db::get_user_by_username(&login_payload.username, Some(&mut conn)) {
         // empty password means no password login
