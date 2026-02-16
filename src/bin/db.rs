@@ -19,6 +19,9 @@ struct Cli {
 enum Commands {
     #[command(subcommand)]
     User(UserCommands),
+
+    #[command(subcommand)]
+    Goal(GoalCommands),
 }
 
 #[derive(Debug, Subcommand)]
@@ -27,6 +30,11 @@ enum UserCommands {
     Show,
     Edit { id: i32 },
     Delete { id: i32 },
+}
+
+#[derive(Debug, Subcommand)]
+enum GoalCommands {
+    New,
 }
 
 fn main() {
@@ -47,6 +55,11 @@ fn main() {
             }
             UserCommands::Delete { id } => {
                 delete_user_by_id(*id);
+            }
+        },
+        Commands::Goal(goal_command) => match goal_command {
+            GoalCommands::New => {
+                create_goal_from_prompt();
             }
         },
     };
@@ -188,4 +201,21 @@ fn delete_user_by_id(id_to_delete: i32) {
         .expect("Error while deleting user");
 
     println!("deleted {num_deleted} users");
+}
+
+fn create_goal_from_prompt() {
+    use crate::schema::users::dsl::*;
+
+    let connection = &mut establish_connection();
+
+    let all_users = users
+        .select((id, username))
+        .load::<(i32, String)>(connection)
+        .unwrap();
+
+    println!("Users:");
+
+    for (_id, _username) in all_users.into_iter() {
+        println!("{:?}, {}", _id, _username.to_string());
+    }
 }
