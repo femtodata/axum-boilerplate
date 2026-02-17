@@ -71,6 +71,9 @@ pub enum WebappError {
 
     #[error(transparent)]
     R2d2Error(#[from] diesel::r2d2::PoolError),
+
+    #[error(transparent)]
+    BcryptError(#[from] bcrypt::BcryptError),
     // #[error(transparent)]
     // PolarsError(#[from] polars::prelude::PolarsError),
     //#[error(transparent)]

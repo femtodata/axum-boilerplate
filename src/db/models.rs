@@ -9,6 +9,8 @@ use diesel::{
 };
 use thiserror::Error;
 
+use crate::webapp::WebappError;
+
 #[derive(Debug, Clone, PartialEq, AsExpression, FromSqlRow)]
 #[diesel(sql_type = diesel::sql_types::Text)]
 pub struct EmailAddress(String);
@@ -73,6 +75,15 @@ pub struct NewUser<'a> {
     pub username: &'a str,
     pub email: Option<&'a EmailAddress>,
     pub hashed_password: Option<&'a str>,
+}
+
+pub fn hash_password(password: String) -> Result<String, WebappError> {
+    bcrypt::hash(password.trim(), bcrypt::DEFAULT_COST)
+        .map_err(|err| return WebappError::BcryptError(err))
+}
+
+pub fn verify_password(password: &str, hashed_password: &str) -> Result<bool, WebappError> {
+    bcrypt::verify(password, hashed_password).map_err(|err| return WebappError::BcryptError(err))
 }
 
 // Goal

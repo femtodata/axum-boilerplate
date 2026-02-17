@@ -68,7 +68,7 @@ fn main() {
 fn show_users() {
     use axum_boilerplate::db::schema::users::dsl::*;
 
-    let connection = &mut establish_connection();
+    let connection = &mut establish_connection(None);
     let results = users
         .limit(5)
         .select(User::as_select())
@@ -84,7 +84,7 @@ fn show_users() {
 fn create_new_user_from_prompt() {
     use axum_boilerplate::db::schema::users;
 
-    let connection = &mut establish_connection();
+    let connection = &mut establish_connection(None);
 
     let stdout = stdout();
     let mut stdout = stdout.lock();
@@ -129,7 +129,7 @@ fn prompt_and_hash_password(stdin: &mut StdinLock, stdout: &mut StdoutLock) -> O
             if password.len() == 0 {
                 return None;
             }
-            let hashed_password = bcrypt::hash(password.trim(), bcrypt::DEFAULT_COST).unwrap();
+            let hashed_password = hash_password(password).unwrap();
             Some(hashed_password)
         }
         None => None,
@@ -159,7 +159,7 @@ fn prompt_email(stdin: &mut StdinLock, stdout: &mut StdoutLock) -> Option<EmailA
 fn edit_user(id: i32) {
     use axum_boilerplate::db::schema::users::dsl::users;
 
-    let connection = &mut establish_connection();
+    let connection = &mut establish_connection(None);
 
     let stdout = stdout();
     let mut stdout = stdout.lock();
@@ -194,7 +194,7 @@ fn edit_user(id: i32) {
 fn delete_user_by_id(id_to_delete: i32) {
     use axum_boilerplate::db::schema::users::dsl::*;
 
-    let connection = &mut establish_connection();
+    let connection = &mut establish_connection(None);
 
     let num_deleted = diesel::delete(users.filter(id.eq(id_to_delete)))
         .execute(connection)
@@ -206,7 +206,7 @@ fn delete_user_by_id(id_to_delete: i32) {
 fn create_goal_from_prompt() {
     use crate::schema::users::dsl::*;
 
-    let connection = &mut establish_connection();
+    let connection = &mut establish_connection(None);
 
     let all_users = users
         .select((id, username))

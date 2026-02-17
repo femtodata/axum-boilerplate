@@ -8,13 +8,12 @@ use axum::{
     response::{Html, IntoResponse, Redirect, Response},
 };
 use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
-use bcrypt::bcrypt;
 use serde::Deserialize;
 use tracing::info;
 use url::Url;
 use validator::{Validate, ValidationErrorsKind};
 
-use crate::db;
+use crate::db::{self, models::verify_password};
 
 use super::{WebappError, state::AppState};
 
@@ -82,7 +81,7 @@ pub async fn post_login(
     if let Some(user) = db::get_user_by_username(&login_payload.username, Some(&mut conn)) {
         // empty password means no password login
         if let Some(hashed_password) = user.hashed_password {
-            if bcrypt::verify(login_payload.password, &hashed_password)
+            if verify_password(&login_payload.password, &hashed_password)
                 .ok()
                 .unwrap_or_else(|| false)
             {

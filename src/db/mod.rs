@@ -7,10 +7,12 @@ use std::env;
 pub mod models;
 pub mod schema;
 
-pub fn establish_connection() -> PgConnection {
+pub fn establish_connection(db_url: Option<String>) -> PgConnection {
     dotenv().ok();
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL");
+    let database_url =
+        db_url.unwrap_or_else(|| env::var("DATABASE_URL").expect("DATABASE_URL needs definition"));
+
     PgConnection::establish(&database_url)
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
 }
@@ -29,7 +31,7 @@ pub fn get_connection_pool() -> Pool<ConnectionManager<PgConnection>> {
 pub fn get_user_by_email(email: &str, conn: Option<&mut PgConnection>) -> Option<User> {
     let conn = match conn {
         Some(conn) => conn,
-        None => &mut establish_connection(),
+        None => &mut establish_connection(None),
     };
 
     let user = schema::users::table
@@ -44,7 +46,7 @@ pub fn get_user_by_email(email: &str, conn: Option<&mut PgConnection>) -> Option
 pub fn get_user_by_username(username: &str, conn: Option<&mut PgConnection>) -> Option<User> {
     let conn = match conn {
         Some(conn) => conn,
-        None => &mut establish_connection(),
+        None => &mut establish_connection(None),
     };
 
     let user = schema::users::table
