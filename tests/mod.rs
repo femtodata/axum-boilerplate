@@ -6,7 +6,6 @@ use axum_boilerplate::db::{
 };
 use diesel::RunQueryDsl;
 use dotenvy::dotenv;
-use email_address::EmailAddress;
 
 mod database;
 
