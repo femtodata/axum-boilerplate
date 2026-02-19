@@ -2,7 +2,7 @@ use std::env;
 
 use axum_boilerplate::db::models::{
     EmailAddress, NewUser,
-    user::{create_new_user, hash_password},
+    user::{create_new_user, hash_password, verify_password},
 };
 use database::run_migrations;
 use dotenvy::dotenv;
@@ -38,6 +38,9 @@ fn test_create_user() {
 
     assert_eq!(user.username, new_user.username);
     assert_eq!(user.email, new_user.email);
-    // assert_eq!(user.hashed_password, new_user.hashed_password);
-    assert_eq!(user.hashed_password, Some("blah".to_string()));
+    assert_eq!(user.hashed_password, new_user.hashed_password);
+    assert_eq!(
+        true,
+        verify_password("blahblahblah", user.hashed_password.unwrap().as_str()).unwrap()
+    );
 }
