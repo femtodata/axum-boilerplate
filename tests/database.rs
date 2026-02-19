@@ -1,4 +1,5 @@
 use diesel::{Connection, PgConnection, RunQueryDsl};
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 
 pub struct Database {
     url: String,
@@ -43,5 +44,21 @@ impl Drop for Database {
         diesel::sql_query(format!(r#"DROP DATABASE IF EXISTS "{}""#, database))
             .execute(&mut conn)
             .unwrap();
+        println!("database dropped");
     }
+}
+
+// migrations
+
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
+
+pub fn run_migrations(conn: &mut PgConnection) {
+    match conn.run_pending_migrations(MIGRATIONS) {
+        Ok(_) => {
+            println!("Database migrated");
+        }
+        Err(e) => {
+            eprint!("Error migrating database: {}", e);
+        }
+    };
 }

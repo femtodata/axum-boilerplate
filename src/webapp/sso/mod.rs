@@ -27,6 +27,7 @@ use super::handlers;
 use super::state::AppState;
 
 use crate::db;
+use crate::db::models::user::get_user_by_email;
 
 pub mod google_sso;
 pub mod microsoft_sso;
@@ -147,7 +148,7 @@ async fn get_sso_callback(
 
     let mut conn = state.pool.clone().get()?;
 
-    let user = db::get_user_by_email(email, Some(&mut conn));
+    let user = get_user_by_email(email, &mut conn);
 
     let Some(user) = user else {
         // return Err(WebappError::NoMatchingUserError);

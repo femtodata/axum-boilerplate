@@ -1,7 +1,9 @@
 use std::io::{StdinLock, StdoutLock, Write, stdin, stdout};
 
-use axum_boilerplate::db::models::*;
-use axum_boilerplate::db::*;
+use axum_boilerplate::db::{
+    establish_connection,
+    models::{EmailAddress, NewUser, User, user::hash_password},
+};
 use diesel::prelude::*;
 
 use termion::input::TermRead;
@@ -204,7 +206,7 @@ fn delete_user_by_id(id_to_delete: i32) {
 }
 
 fn create_goal_from_prompt() {
-    use crate::schema::users::dsl::*;
+    use axum_boilerplate::db::schema::users::dsl::*;
 
     let connection = &mut establish_connection(None);
 
