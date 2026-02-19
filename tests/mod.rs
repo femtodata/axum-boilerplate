@@ -1,3 +1,4 @@
+use diesel::prelude::*;
 use std::env;
 
 use axum_boilerplate::db::models::{
@@ -81,6 +82,12 @@ fn test_goal(conn: &mut diesel::PgConnection, user: &User) -> Goal {
     goal
 }
 
-fn test_user_goal(conn: &mut diesel::PgConnection, user: &User, goal: &Goal) -> _ {
-    todo!()
+fn test_user_goal(conn: &mut diesel::PgConnection, user: &User, goal: &Goal) {
+    println!("testing goal user relation");
+    let goals: Vec<Goal> = Goal::belonging_to(user)
+        .select(Goal::as_select())
+        .load(conn)
+        .unwrap();
+
+    assert_eq!(true, goals.contains(goal));
 }

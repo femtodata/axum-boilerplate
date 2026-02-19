@@ -60,7 +60,7 @@ impl EmailAddress {
     }
 }
 
-#[derive(Debug, Queryable, Selectable, AsChangeset)]
+#[derive(Debug, PartialEq, Queryable, Identifiable, Selectable, AsChangeset)]
 #[diesel(table_name = crate::db::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[diesel(treat_none_as_null = true)]

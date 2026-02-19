@@ -1,7 +1,8 @@
 use diesel::prelude::*;
 
-use crate::db::schema::goals;
-#[derive(Debug, Queryable, Selectable, AsChangeset)]
+use crate::db::{models::user::User, schema::goals};
+#[derive(Debug, PartialEq, Queryable, Identifiable, Associations, Selectable, AsChangeset)]
+#[diesel(belongs_to(User))]
 #[diesel(table_name = crate::db::schema::goals)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 #[diesel(treat_none_as_null = true)]
