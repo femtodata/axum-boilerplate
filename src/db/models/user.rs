@@ -10,7 +10,10 @@ use diesel::{
 
 use thiserror::Error;
 
-use crate::{db::schema, webapp::WebappError};
+use crate::{
+    db::schema::{self, users},
+    webapp::WebappError,
+};
 
 #[derive(Debug, Clone, PartialEq, AsExpression, FromSqlRow)]
 #[diesel(sql_type = diesel::sql_types::Text)]
@@ -103,4 +106,14 @@ pub fn get_user_by_username(username: &str, conn: &mut PgConnection) -> Option<U
         .unwrap();
 
     user
+}
+
+pub fn create_new_user(
+    new_user: &NewUser,
+    conn: &mut PgConnection,
+) -> Result<User, diesel::result::Error> {
+    diesel::insert_into(users::table)
+        .values(new_user)
+        .returning(User::as_returning())
+        .get_result(conn)
 }

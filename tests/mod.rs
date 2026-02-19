@@ -1,6 +1,9 @@
 use std::env;
 
-use axum_boilerplate::db::models::{EmailAddress, NewUser, user::hash_password};
+use axum_boilerplate::db::models::{
+    EmailAddress, NewUser,
+    user::{create_new_user, hash_password},
+};
 use database::run_migrations;
 use dotenvy::dotenv;
 
@@ -19,9 +22,21 @@ fn test_create_user() {
 
     run_migrations(&mut conn);
 
+    let email_address = EmailAddress::new("test-01@test.com").unwrap();
+    let hashed_password = hash_password("blahblahblah".to_string()).unwrap();
     let new_user = NewUser {
         username: "test-01",
-        email: Some(&EmailAddress::new("test-01@test.com").unwrap()),
-        hashed_password: Some(hash_password("blahblahblah".to_string()).unwrap().as_str()),
+        email: Some(&email_address),
+        hashed_password: Some(hashed_password.as_str()),
     };
+
+    let user = create_new_user(&new_user, &mut conn)
+        .unwrap_or_else(|err| panic!("error creating new user: {}", err));
+
+    assert_eq!(user.username, new_user.username);
+    assert_eq!(user.email.as_ref(), new_user.email);
+    assert_eq!(
+        user.hashed_password,
+        new_user.hashed_password.map(|x| x.to_string())
+    );
 }
