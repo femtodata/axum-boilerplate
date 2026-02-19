@@ -73,10 +73,10 @@ pub struct User {
 
 #[derive(Debug, Insertable)]
 #[diesel(table_name = crate::db::schema::users)]
-pub struct NewUser<'a> {
-    pub username: &'a str,
-    pub email: Option<&'a EmailAddress>,
-    pub hashed_password: Option<&'a str>,
+pub struct NewUser {
+    pub username: String,
+    pub email: Option<EmailAddress>,
+    pub hashed_password: Option<String>,
 }
 
 pub fn hash_password(password: String) -> Result<String, WebappError> {

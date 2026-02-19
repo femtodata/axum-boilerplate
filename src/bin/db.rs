@@ -107,9 +107,9 @@ fn create_new_user_from_prompt() {
     let email = prompt_email(&mut stdin, &mut stdout);
 
     let new_user = NewUser {
-        username: &username.trim(),
-        hashed_password: hashed_password.as_ref().map(|x| x.as_ref()),
-        email: email.as_ref(),
+        username: username.trim().to_string(),
+        hashed_password,
+        email,
     };
 
     let user = create_new_user(&new_user, &mut conn).expect("error saving user");
