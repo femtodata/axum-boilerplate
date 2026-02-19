@@ -2,7 +2,10 @@ use std::io::{StdinLock, StdoutLock, Write, stdin, stdout};
 
 use axum_boilerplate::db::{
     establish_connection,
-    models::{EmailAddress, NewUser, User, user::hash_password},
+    models::{
+        EmailAddress, NewUser, User,
+        user::{create_new_user, hash_password},
+    },
 };
 use diesel::prelude::*;
 
@@ -86,7 +89,7 @@ fn show_users() {
 fn create_new_user_from_prompt() {
     use axum_boilerplate::db::schema::users;
 
-    let connection = &mut establish_connection(None);
+    let mut conn = establish_connection(None);
 
     let stdout = stdout();
     let mut stdout = stdout.lock();
@@ -109,11 +112,7 @@ fn create_new_user_from_prompt() {
         email: email.as_ref(),
     };
 
-    let user = diesel::insert_into(users::table)
-        .values(&new_user)
-        .returning(User::as_returning())
-        .get_result(connection)
-        .expect("error saving user");
+    let user = create_new_user(&new_user, &mut conn).expect("error saving user");
 
     info!("created: {user:#?}");
 }
