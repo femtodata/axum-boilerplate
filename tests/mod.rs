@@ -1,7 +1,8 @@
 use std::env;
 
 use axum_boilerplate::db::models::{
-    EmailAddress, NewUser,
+    EmailAddress, Goal, NewGoal, NewUser, User,
+    goal::create_new_goal,
     user::{create_new_user, hash_password, verify_password},
 };
 use database::run_migrations;
@@ -19,9 +20,18 @@ fn get_user_01() -> NewUser {
     }
 }
 
+fn get_goal_01(user_id: i32) -> NewGoal {
+    NewGoal {
+        title: "Goal-01".to_string(),
+        description: "Goal-01 Description".to_string(),
+        notes: Some("Goal-01 notes".to_string()),
+        user_id,
+    }
+}
+
 #[test]
-fn test_create_user() {
-    dotenv().ok();
+fn test_db_ops() {
+    dotenv().unwrap();
 
     let db_url = env::var("DATABASE_TEST_URL").expect("DATABASE_TEST_URL env var needed");
     let db = database::Database::new(&db_url);
@@ -32,8 +42,15 @@ fn test_create_user() {
 
     run_migrations(&mut conn);
 
+    let user = test_user(&mut conn);
+    let goal = test_goal(&mut conn, &user);
+    test_user_goal(&mut conn, &user, &goal);
+}
+
+fn test_user(conn: &mut diesel::PgConnection) -> User {
+    println!("testing user");
     let new_user = get_user_01();
-    let user = create_new_user(&new_user, &mut conn)
+    let user = create_new_user(&new_user, conn)
         .unwrap_or_else(|err| panic!("error creating new user: {}", err));
 
     assert_eq!(user.username, new_user.username);
@@ -41,6 +58,29 @@ fn test_create_user() {
     assert_eq!(user.hashed_password, new_user.hashed_password);
     assert_eq!(
         true,
-        verify_password("blahblahblah", user.hashed_password.unwrap().as_str()).unwrap()
+        verify_password(
+            "blahblahblah",
+            new_user.hashed_password.as_ref().unwrap().as_str()
+        )
+        .unwrap()
     );
+
+    user
+}
+
+fn test_goal(conn: &mut diesel::PgConnection, user: &User) -> Goal {
+    println!("testing goal");
+    let new_goal = get_goal_01(user.id);
+    let goal = create_new_goal(&new_goal, conn)
+        .unwrap_or_else(|err| panic!("error creating new goal: {}", err));
+    assert_eq!(goal.title, new_goal.title);
+    assert_eq!(goal.description, new_goal.description);
+    assert_eq!(goal.notes, new_goal.notes);
+    assert_eq!(goal.user_id, new_goal.user_id);
+
+    goal
+}
+
+fn test_user_goal(conn: &mut diesel::PgConnection, user: &User, goal: &Goal) -> _ {
+    todo!()
 }
