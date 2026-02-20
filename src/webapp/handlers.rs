@@ -144,10 +144,31 @@ pub async fn get_index(
         context.insert("user", &user.to_string())
     }
 
-    context.insert("title", "Home");
-    context.insert("content", "STUFF GOES HERE");
+    context.insert("title", "axum-boilerplate | Home");
+    context.insert("content", "Home Content");
 
     let rendered = tera.render("home.html", &context)?;
+
+    Ok(Html(rendered))
+}
+
+pub async fn get_goals(
+    jar: PrivateCookieJar,
+    State(tera): State<tera::Tera>,
+) -> Result<Html<String>, WebappError> {
+    let mut context = tera::Context::new();
+
+    // TODO: shouldn't have to handle no user
+    if let Some(user) = jar.get("user") {
+        info!("logged in user: {:#?}", user);
+        context.insert("user", &user.to_string());
+        context.insert("active", &true);
+    }
+
+    context.insert("title", "axum-boilerplate | Goals");
+    context.insert("content", "Goals Content");
+
+    let rendered = tera.render("goals.html", &context)?;
 
     Ok(Html(rendered))
 }
