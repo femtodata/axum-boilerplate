@@ -74,6 +74,9 @@ pub enum WebappError {
 
     #[error(transparent)]
     BcryptError(#[from] bcrypt::BcryptError),
+
+    #[error("Not logged in")]
+    NotLoggedInError,
     // #[error(transparent)]
     // PolarsError(#[from] polars::prelude::PolarsError),
     //#[error(transparent)]

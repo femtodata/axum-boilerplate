@@ -158,15 +158,17 @@ pub async fn get_goals(
 ) -> Result<Html<String>, WebappError> {
     let mut context = tera::Context::new();
 
-    // TODO: shouldn't have to handle no user
-    if let Some(user) = jar.get("user") {
-        info!("logged in user: {:#?}", user);
-        context.insert("user", &user.to_string());
-        context.insert("active", &true);
-    }
+    let user = match jar.get("user") {
+        Some(user) => user,
+        None => return Err(WebappError::NotLoggedInError),
+    };
+
+    info!("logged in user: {:#?}", user);
+    context.insert("user", &user.to_string());
 
     context.insert("title", "axum-boilerplate | Goals");
     context.insert("content", "Goals Content");
+    context.insert("active", "goals");
 
     let rendered = tera.render("goals.html", &context)?;
 
