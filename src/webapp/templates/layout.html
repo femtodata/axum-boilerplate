@@ -16,29 +16,7 @@
     <title>{% block title %}{% endblock %}</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-md navbar-light bg-light">
-      <div class="container-fluid" hx-boost="true">
-        <a href="/" class="navbar-brand">axum-boilerplate</a>
-        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-          <div class="navbar-nav">
-            <a href="#" class="nav-item nav-link active">Home</a>
-            <a href="#" class="nav-item nav-link">Items</a>
-          </div>
-          {% if user %}
-            <div class="navbar-nav ms-auto">
-              <a href="/logout" class="nav-item nav-link">Logout</a>
-            </div>
-          {% else %}
-            <div class="navbar-nav ms-auto">
-              <a href="/login" class="nav-item nav-link">Login</a>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </nav>
+    {% include "navbar.html" %}
     <div id="content">
     {% block body %}{% endblock %}
     </div>

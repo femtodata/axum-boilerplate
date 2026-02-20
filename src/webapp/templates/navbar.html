@@ -1,0 +1,33 @@
+<nav class="navbar navbar-expand-md navbar-light bg-light">
+  <div class="container-fluid">
+    <a href="/" class="navbar-brand">axum-boilerplate</a>
+    <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <div class="navbar-nav">
+        <a href="#" class="nav-item nav-link 
+          {% if not active or active == "home" %}
+          active
+          {% endif %}
+          ">Home</a>
+        {% if user %}
+          <a href="#" class="nav-item nav-link
+            {% if active and active == "goals" %}
+            active
+            {% endif %}
+          ">Goals</a>
+        {% endif %}
+      </div>
+      {% if user %}
+        <div class="navbar-nav ms-auto">
+          <a href="/logout" class="nav-item nav-link">Logout</a>
+        </div>
+      {% else %}
+        <div class="navbar-nav ms-auto">
+          <a href="/login" class="nav-item nav-link">Login</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</nav>
