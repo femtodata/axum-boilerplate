@@ -7,6 +7,7 @@ edition = "2024"
 anyhow = "1.0.99"
 axum = { version = "0.8.4", features = ["macros"] }
 axum-extra = { version = "0.10.1", features = ["cookie-private"] }
+axum-htmx = { version = "0.8.1", features = ["auto-vary", "serde"] }
 bcrypt = "0.17.1"
 chrono = "0.4.41"
 clap = { version = "4.5.47", features = ["derive", "string", "cargo"] }

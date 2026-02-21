@@ -462,6 +462,7 @@ dependencies = [
  "anyhow",
  "axum",
  "axum-extra",
+ "axum-htmx",
  "bcrypt",
  "chrono",
  "clap",
@@ -533,6 +534,21 @@ dependencies = [
  "tower",
  "tower-layer",
  "tower-service",
+]
+
+[[package]]
+name = "axum-htmx"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2d4a162b7621482903309c0e8a990a866728b6312350147181230f840252314"
+dependencies = [
+ "axum-core",
+ "futures",
+ "http",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tower",
 ]
 
 [[package]]
