@@ -3,11 +3,12 @@ use std::io::{StdinLock, StdoutLock, Write, stdin, stdout};
 use axum_boilerplate::db::{
     establish_connection,
     models::{
-        EmailAddress, NewUser, User,
+        EmailAddress, Goal, NewUser, User,
         user::{create_new_user, hash_password},
     },
+    schema::{goals, users},
 };
-use diesel::prelude::*;
+use diesel::{debug_query, pg::Pg, prelude::*};
 
 use termion::input::TermRead;
 
@@ -40,6 +41,7 @@ enum UserCommands {
 #[derive(Debug, Subcommand)]
 enum GoalCommands {
     New,
+    Show { user_id: Option<i32> },
 }
 
 fn main() {
@@ -65,6 +67,9 @@ fn main() {
         Commands::Goal(goal_command) => match goal_command {
             GoalCommands::New => {
                 create_goal_from_prompt();
+            }
+            GoalCommands::Show { user_id } => {
+                show_goals(*user_id);
             }
         },
     };
@@ -219,4 +224,24 @@ fn create_goal_from_prompt() {
     for (_id, _username) in all_users.into_iter() {
         println!("{:?}, {}", _id, _username.to_string());
     }
+}
+
+fn show_goals(user_id: Option<i32>) {
+    let conn = &mut establish_connection(None);
+
+    // ex how to use debug_query
+    let users: Vec<User> = match user_id {
+        Some(user_id) => {
+            let query = users::table.filter(users::id.eq(user_id));
+            println!("{}", debug_query::<Pg, _>(&query));
+            query.load::<User>(conn).unwrap()
+        }
+        None => {
+            let query = users::table.select(User::as_select());
+            println!("{}", debug_query::<Pg, _>(&query));
+            query.load(conn).unwrap()
+        }
+    };
+
+    println!("users: {:#?}", users);
 }
