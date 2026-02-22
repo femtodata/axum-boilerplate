@@ -169,16 +169,12 @@ pub async fn get_goals(
     };
 
     let mut conn = state.pool.clone().get()?;
-    debug!("getting user: {}", &username);
     let user = users::table
         .filter(users::username.eq(&username))
         .first::<User>(&mut conn)?;
-    debug!("cleared user");
 
     let goals = Goal::belonging_to(&user).load::<Goal>(&mut conn)?;
-    debug!("goals: {:#?}", goals);
 
-    info!("logged in user: {:#?}", &username);
     context.insert("user", &username);
 
     context.insert("title", "axum-boilerplate | Goals");
