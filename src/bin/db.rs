@@ -210,12 +210,10 @@ fn delete_user_by_id(id_to_delete: i32) {
 }
 
 fn create_goal_from_prompt() {
-    use axum_boilerplate::db::schema::users::dsl::*;
-
     let connection = &mut establish_connection(None);
 
-    let all_users = users
-        .select((id, username))
+    let all_users = users::table
+        .select((users::id, users::username))
         .load::<(i32, String)>(connection)
         .unwrap();
 
