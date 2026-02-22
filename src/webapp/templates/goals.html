@@ -6,14 +6,16 @@
     {{super()}}
   {% endif %}
 {% endblock title %}
-{% block body %}
-<table class="table">
-  {% for goal in goals %}
-    <tr>
-      <td>{{ goal["title"] }}</td>
-      <td>{{ goal["description"] }}</td>
-      <td>{{ goal["notes"] }}</td>
-    </tr>
-  {% endfor %}
-</table>
-{% endblock %}
+{% block content %}
+<div class="container">
+  <table class="table">
+    {% for goal in goals %}
+      <tr>
+        <td>{{ goal["title"] }}</td>
+        <td>{{ goal["description"] }}</td>
+        <td>{{ goal["notes"] }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock content %}
