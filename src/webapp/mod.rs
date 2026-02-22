@@ -67,7 +67,7 @@ pub enum WebappError {
     MissingEmailError,
 
     #[error("No user with that email found")]
-    NoMatchingUserError,
+    NoMatchingUserEmailError,
 
     #[error(transparent)]
     R2d2Error(#[from] diesel::r2d2::PoolError),
@@ -77,6 +77,9 @@ pub enum WebappError {
 
     #[error("Not logged in")]
     NotLoggedInError,
+
+    #[error(transparent)]
+    DieselResultError(#[from] diesel::result::Error),
     // #[error(transparent)]
     // PolarsError(#[from] polars::prelude::PolarsError),
     //#[error(transparent)]

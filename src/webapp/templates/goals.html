@@ -1,5 +1,13 @@
 {% extends "layout.html" %}
 {% block title %}{{ super() }} | {{ title }} {% endblock %}
 {% block body %}
-{{ content }}
+<table>
+  {% for goal in goals %}
+    <tr>
+      <td>{{ goal["title"] }}</td>
+      <td>{{ goal["description"] }}</td>
+      <td>{{ goal["notes"] }}</td>
+    </tr>
+  {% endfor %}
+</table>
 {% endblock %}

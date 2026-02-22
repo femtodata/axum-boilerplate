@@ -1,3 +1,4 @@
+use diesel::prelude::*;
 use std::{collections::HashMap, str::FromStr};
 
 use axum::{
@@ -9,13 +10,16 @@ use axum::{
 };
 use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
 use serde::Deserialize;
-use tracing::info;
+use tracing::{debug, info};
 use url::Url;
 use validator::{Validate, ValidationErrorsKind};
 
 use crate::db::{
-    self,
-    models::user::{get_user_by_username, verify_password},
+    models::{
+        Goal, User,
+        user::{get_user_by_username, verify_password},
+    },
+    schema::{goals, users},
 };
 
 use super::{WebappError, state::AppState};
@@ -154,20 +158,31 @@ pub async fn get_index(
 
 pub async fn get_goals(
     jar: PrivateCookieJar,
+    State(state): State<AppState>,
     State(tera): State<tera::Tera>,
 ) -> Result<Html<String>, WebappError> {
     let mut context = tera::Context::new();
 
-    let user = match jar.get("user") {
-        Some(user) => user,
+    let username = match jar.get("user") {
+        Some(user) => user.value().to_string(),
         None => return Err(WebappError::NotLoggedInError),
     };
 
-    info!("logged in user: {:#?}", user);
-    context.insert("user", &user.to_string());
+    let mut conn = state.pool.clone().get()?;
+    debug!("getting user: {}", &username);
+    let user = users::table
+        .filter(users::username.eq(&username))
+        .first::<User>(&mut conn)?;
+    debug!("cleared user");
+
+    let goals = Goal::belonging_to(&user).load::<Goal>(&mut conn)?;
+    debug!("goals: {:#?}", goals);
+
+    info!("logged in user: {:#?}", &username);
+    context.insert("user", &username);
 
     context.insert("title", "axum-boilerplate | Goals");
-    context.insert("content", "Goals Content");
+    context.insert("goals", &goals);
     context.insert("active", "goals");
 
     let rendered = tera.render("goals.html", &context)?;

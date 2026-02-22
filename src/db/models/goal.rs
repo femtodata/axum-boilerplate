@@ -1,7 +1,18 @@
 use diesel::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::db::{models::user::User, schema::goals};
-#[derive(Debug, PartialEq, Queryable, Identifiable, Associations, Selectable, AsChangeset)]
+#[derive(
+    Debug,
+    PartialEq,
+    Serialize,
+    Deserialize,
+    Queryable,
+    Identifiable,
+    Associations,
+    Selectable,
+    AsChangeset,
+)]
 #[diesel(belongs_to(User))]
 #[diesel(table_name = crate::db::schema::goals)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
