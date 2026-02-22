@@ -3,7 +3,8 @@ use std::io::{StdinLock, StdoutLock, Write, stdin, stdout};
 use axum_boilerplate::db::{
     establish_connection,
     models::{
-        EmailAddress, Goal, NewUser, User,
+        EmailAddress, Goal, NewGoal, NewUser, User,
+        goal::create_new_goal,
         user::{create_new_user, hash_password},
     },
     schema::{goals, users},
@@ -210,18 +211,44 @@ fn delete_user_by_id(id_to_delete: i32) {
 }
 
 fn create_goal_from_prompt() {
-    let connection = &mut establish_connection(None);
+    let mut conn = establish_connection(None);
 
-    let all_users = users::table
-        .select((users::id, users::username))
-        .load::<(i32, String)>(connection)
+    let mut stdout = stdout().lock();
+    let mut stdin = stdin().lock();
+
+    stdout.write_all(b"user_id: ").unwrap();
+    stdout.flush().unwrap();
+    let user_id: i32 = stdin
+        .read_line()
+        .unwrap()
+        .expect("user_id cannot be blank")
+        .parse()
         .unwrap();
 
-    println!("Users:");
+    stdout.write_all(b"title: ").unwrap();
+    stdout.flush().unwrap();
+    let title = stdin.read_line().unwrap().expect("title cannot be blank");
 
-    for (_id, _username) in all_users.into_iter() {
-        println!("{:?}, {}", _id, _username.to_string());
-    }
+    stdout.write_all(b"description: ").unwrap();
+    stdout.flush().unwrap();
+    let description = stdin
+        .read_line()
+        .unwrap()
+        .expect("description cannot be blank");
+
+    stdout.write_all(b"notes: ").unwrap();
+    stdout.flush().unwrap();
+    let notes = stdin.read_line().unwrap();
+
+    let new_goal = NewGoal {
+        title,
+        description,
+        notes,
+        user_id,
+    };
+
+    let goal = create_new_goal(&new_goal, &mut conn).unwrap();
+    println!("{:#?}", goal);
 }
 
 fn show_goals(user_id: Option<i32>) {
