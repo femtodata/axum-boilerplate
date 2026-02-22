@@ -243,5 +243,7 @@ fn show_goals(user_id: Option<i32>) {
         }
     };
 
-    println!("users: {:#?}", users);
+    let goals: Vec<Goal> = Goal::belonging_to(&users).load::<Goal>(conn).unwrap();
+
+    println!("Goals: {:#?}", goals);
 }
