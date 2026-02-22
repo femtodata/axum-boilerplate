@@ -1,5 +1,11 @@
 {% extends "layout.html" %}
-{% block title %}{{ super() }} | {{ title }} {% endblock %}
+{% block title %}
+  {% if title %}
+    {{title}}
+  {% else %}
+    {{super()}}
+  {% endif %}
+{% endblock title %}
 {% block body %}
 {{ content }}
 {% endblock %}

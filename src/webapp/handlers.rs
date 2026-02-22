@@ -148,7 +148,6 @@ pub async fn get_index(
         context.insert("user", &user.to_string())
     }
 
-    context.insert("title", "axum-boilerplate | Home");
     context.insert("content", "Home Content");
 
     let rendered = tera.render("home.html", &context)?;
