@@ -8,6 +8,7 @@ use axum::{
     routing::{get, post},
 };
 use axum_extra::extract::cookie::Key;
+use axum_htmx::AutoVaryLayer;
 use rand::distr::{Alphanumeric, SampleString};
 use state::{AppState, InnerState};
 use tera::Tera;
@@ -122,6 +123,7 @@ pub async fn run_server() {
 
     let app = Router::new()
         .route("/goals", get(handlers::get_goals))
+        .route("/goals/new", get(handlers::new_goal))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
             handlers::check_auth,
@@ -137,7 +139,8 @@ pub async fn run_server() {
                 .layer(middleware::from_fn_with_state(
                     app_state.clone(),
                     handlers::error_page,
-                )),
+                ))
+                .layer(AutoVaryLayer),
         )
         .with_state(app_state);
 

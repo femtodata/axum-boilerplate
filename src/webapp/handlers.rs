@@ -1,3 +1,4 @@
+use axum_htmx::HxRequest;
 use diesel::prelude::*;
 use std::{collections::HashMap, str::FromStr};
 
@@ -183,6 +184,17 @@ pub async fn get_goals(
     let rendered = tera.render("goals.html", &context)?;
 
     Ok(Html(rendered))
+}
+
+pub async fn new_goal(
+    jar: PrivateCookieJar,
+    State(tera): State<tera::Tera>,
+    HxRequest(hx_request): HxRequest,
+) -> Result<String, WebappError> {
+    let mut context = tera::Context::new();
+    let rendered = tera.render("goal-form.html", &context)?;
+
+    Ok(rendered)
 }
 
 // to be used as middleware

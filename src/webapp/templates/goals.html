@@ -10,6 +10,9 @@
 <div class="container">
   <div class="mt-2 border-5 w-100">
     <button 
+      hx-get="/goals/new"
+      hx-target="#new-goal-modal-content"
+      hx-trigger="click"
       data-bs-toggle="modal"
       data-bs-target="#new-goal-modal"
       class="btn btn-primary">
@@ -33,20 +36,7 @@
   aria-hidden="false"
   tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Modal title</h5>
-      </div>
-      <div class="modal-body">
-        <p>Modal body text goes here.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal">
-          Close
-        </button>
-      </div>
+    <div id="new-goal-modal-content" class="modal-content">
     </div>
   </div>
 </div>
