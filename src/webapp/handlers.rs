@@ -197,6 +197,14 @@ pub async fn new_goal(
     Ok(rendered)
 }
 
+pub async fn create_new_goal(
+    jar: PrivateCookieJar,
+    State(tera): State<tera::Tera>,
+    HxRequest(hx_request): HxRequest,
+) {
+    todo!()
+}
+
 // to be used as middleware
 pub async fn check_auth(
     jar: PrivateCookieJar,

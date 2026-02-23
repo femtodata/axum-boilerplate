@@ -34,6 +34,13 @@ pub struct NewGoal {
     pub user_id: i32,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct GoalForm {
+    pub title: String,
+    pub description: String,
+    pub notes: Option<String>,
+}
+
 pub fn create_new_goal(
     new_goal: &NewGoal,
     conn: &mut PgConnection,
