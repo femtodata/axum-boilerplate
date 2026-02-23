@@ -8,7 +8,12 @@
 {% endblock title %}
 {% block content %}
 <div class="container">
-  <table class="table">
+  <div class="mt-2 border-5 w-100">
+    <button class="btn btn-primary">
+      New
+    </button>
+  </div>
+  <table class="table-bordered w-100 border mt-2">
     {% for goal in goals %}
       <tr>
         <td>{{ goal["title"] }}</td>
