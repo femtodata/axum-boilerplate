@@ -89,8 +89,8 @@ pub fn verify_password(password: &str, hashed_password: &str) -> Result<bool, We
 }
 
 pub fn get_user_by_email(email: &str, conn: &mut PgConnection) -> Option<User> {
-    let user = schema::users::table
-        .filter(schema::users::email.eq(email))
+    let user = users::table
+        .filter(users::email.eq(email))
         .first(conn)
         .optional()
         .unwrap();

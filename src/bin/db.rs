@@ -77,10 +77,8 @@ fn main() {
 }
 
 fn show_users() {
-    use axum_boilerplate::db::schema::users::dsl::*;
-
     let connection = &mut establish_connection(None);
-    let results = users
+    let results = users::table
         .limit(5)
         .select(User::as_select())
         .load(connection)
@@ -93,8 +91,6 @@ fn show_users() {
 }
 
 fn create_new_user_from_prompt() {
-    use axum_boilerplate::db::schema::users;
-
     let mut conn = establish_connection(None);
 
     let stdout = stdout();
@@ -164,8 +160,6 @@ fn prompt_email(stdin: &mut StdinLock, stdout: &mut StdoutLock) -> Option<EmailA
 }
 
 fn edit_user(id: i32) {
-    use axum_boilerplate::db::schema::users::dsl::users;
-
     let connection = &mut establish_connection(None);
 
     let stdout = stdout();
@@ -176,7 +170,7 @@ fn edit_user(id: i32) {
     let hashed_password = prompt_and_hash_password(&mut stdin, &mut stdout);
     let email = prompt_email(&mut stdin, &mut stdout);
 
-    let mut user: User = users
+    let mut user: User = users::table
         .find(id)
         .first(connection)
         .expect("No user with that id");
@@ -189,7 +183,7 @@ fn edit_user(id: i32) {
         user.email = email;
     }
 
-    let user = diesel::update(users)
+    let user = diesel::update(users::table.filter(users::id.eq(&id)))
         .set(user)
         .returning(User::as_returning())
         .get_result(connection)
@@ -199,11 +193,9 @@ fn edit_user(id: i32) {
 }
 
 fn delete_user_by_id(id_to_delete: i32) {
-    use axum_boilerplate::db::schema::users::dsl::*;
-
     let connection = &mut establish_connection(None);
 
-    let num_deleted = diesel::delete(users.filter(id.eq(id_to_delete)))
+    let num_deleted = diesel::delete(users::table.filter(users::id.eq(id_to_delete)))
         .execute(connection)
         .expect("Error while deleting user");
 
