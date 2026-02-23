@@ -67,18 +67,36 @@
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Modal title</h5>
+              <h5 class="modal-title">New Goal</h5>
             </div>
-            <div class="modal-body">
-              <p>Modal body text goes here.</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal">
-                Close
-              </button>
-            </div>
+            <form>
+              <div class="modal-body">
+                <div>
+                  <label for="goal-title" class="form-label">Title<span class="text-danger">*</span></label>
+                  <input id="goal-title" type="text" class="form-control" required>
+                </div>
+                <div class="mt-3">
+                  <label for="goal-description" class="form-label">Description<span class="text-danger">*</span></label>
+                  <input id="goal-description" type="text" class="form-control" required>
+                </div>
+                <div class="mt-3">
+                  <label for="goal-notes" class="form-label">Notes</label>
+                  <input id="goal-notes" type="text" class="form-control">
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button"
+                  class="btn btn-primary"
+                  data-bs-dismiss="modal">
+                  Create
+                </button>
+                <button type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal">
+                  Close
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
