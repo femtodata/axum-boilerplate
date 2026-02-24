@@ -40,12 +40,15 @@
     </div>
   </div>
 </div>
-{% if trigger %}
 <script>
+document.body.addEventListener("trigger_close", function(evt){
+  document.getElementById('close-goal-form').click();
+});
+{% if trigger_new %}
 window.onload = function() {
   document.getElementById('button-new').click();
 };
-</script>
 {% endif %}
+</script>
 <!-- end modal -->
 {% endblock content %}

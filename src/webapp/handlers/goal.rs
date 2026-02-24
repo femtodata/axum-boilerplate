@@ -10,7 +10,10 @@ use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::response::Response;
 use axum_extra::extract::PrivateCookieJar;
+use axum_htmx::HxEvent;
 use axum_htmx::HxRequest;
+use axum_htmx::HxResponseTrigger;
+use axum_htmx::HxTrigger;
 use diesel::prelude::*;
 use tracing::info;
 
@@ -25,7 +28,7 @@ pub async fn get_goals(
     Ok(Html(rendered).into_response())
 }
 
-pub(crate) fn render_goals(
+fn render_goals(
     jar: PrivateCookieJar,
     state: AppState,
     tera: tera::Tera,
@@ -61,7 +64,7 @@ pub async fn new_goal(
         return Ok(rendered.into_response());
     }
     let mut context = tera::Context::new();
-    context.insert("trigger", &true);
+    context.insert("trigger_new", "true");
     let rendered = render_goals(jar, state, tera, &mut context)?;
 
     Ok(Html(rendered).into_response())
@@ -72,9 +75,12 @@ pub async fn create_new_goal(
     State(tera): State<tera::Tera>,
     HxRequest(hx_request): HxRequest,
     Form(goal_form): Form<GoalForm>,
-) -> Result<String, WebappError> {
+) -> Result<Response, WebappError> {
     // TODO: handle htmx path
-    println!("hello hello");
     info!("goal_form: {:#?}", goal_form);
-    Ok("".to_string())
+
+    let trigger = HxResponseTrigger::normal([HxEvent::new("trigger_close")]);
+    info!("{:#?}", trigger);
+
+    Ok((trigger, "").into_response())
 }

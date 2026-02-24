@@ -19,12 +19,12 @@
   <div class="modal-footer">
     <button type="submit"
       hx-post="/goals/new"
-      hx-target="#new-goal-modal-content"
-      class="btn btn-primary"
-      data-bs-dismiss="modal">
+      hx-swap="none"
+      class="btn btn-primary">
       Create
     </button>
-    <button type="button"
+    <button id="close-goal-form"
+      type="button"
       class="btn btn-secondary"
       data-bs-dismiss="modal">
       Close
