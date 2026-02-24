@@ -3,8 +3,7 @@ use diesel::prelude::*;
 use std::{collections::HashMap, str::FromStr};
 
 use axum::{
-    Form,
-    extract::{Query, Request, State},
+    extract::{Form, Query, Request, State},
     http::{HeaderMap, StatusCode},
     middleware::Next,
     response::{Html, IntoResponse, Redirect, Response},
@@ -18,6 +17,7 @@ use validator::{Validate, ValidationErrorsKind};
 use crate::db::{
     models::{
         Goal, User,
+        goal::GoalForm,
         user::{get_user_by_username, verify_password},
     },
     schema::{goals, users},
@@ -191,6 +191,7 @@ pub async fn new_goal(
     State(tera): State<tera::Tera>,
     HxRequest(hx_request): HxRequest,
 ) -> Result<String, WebappError> {
+    // TODO: handle htmx path
     let mut context = tera::Context::new();
     let rendered = tera.render("goal-form.html", &context)?;
 
@@ -201,8 +202,12 @@ pub async fn create_new_goal(
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
     HxRequest(hx_request): HxRequest,
-) {
-    todo!()
+    Form(goal_form): Form<GoalForm>,
+) -> Result<String, WebappError> {
+    // TODO: handle htmx path
+    println!("hello hello");
+    info!("goal_form: {:#?}", goal_form);
+    Ok("".to_string())
 }
 
 // to be used as middleware
