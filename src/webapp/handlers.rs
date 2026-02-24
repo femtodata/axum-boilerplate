@@ -256,14 +256,9 @@ pub async fn error_middleware(
 
     let status_code = response.status();
 
-    if status_code.is_server_error() {
+    if status_code.is_server_error() || status_code.is_client_error() {
         if hx_request {
-            return Ok((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                HxRedirect("/error".to_string()),
-                "",
-            )
-                .into_response());
+            return Ok((status_code, HxRedirect("/error".to_string()), "").into_response());
         }
 
         return Ok(Redirect::to("/error").into_response());
