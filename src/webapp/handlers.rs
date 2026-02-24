@@ -203,7 +203,7 @@ pub async fn new_goal(
         return Ok(rendered.into_response());
     }
     let mut context = tera::Context::new();
-    context.insert("trigger-new", &true);
+    context.insert("trigger", &true);
     let rendered = render_goals(jar, state, tera, &mut context)?;
 
     Ok(Html(rendered).into_response())
