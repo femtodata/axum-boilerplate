@@ -210,8 +210,19 @@ pub async fn create_new_goal(
     Ok("".to_string())
 }
 
+pub async fn get_error_page(State(tera): State<tera::Tera>) -> Result<Response, WebappError> {
+    let mut context = tera::Context::new();
+    context.insert(
+        "content",
+        "Unfortunately, we've encountered an error. Please try again.",
+    );
+
+    let rendered = tera.render("error.html", &context)?;
+    Ok(Html(rendered).into_response())
+}
+
 // to be used as middleware
-pub async fn check_auth(
+pub async fn auth_middleware(
     jar: PrivateCookieJar,
     HxRequest(hx_request): HxRequest,
     request: Request,
@@ -232,7 +243,7 @@ pub async fn check_auth(
 }
 
 // to be used with middleware::from_fn_with_state
-pub async fn error_page(
+pub async fn error_middleware(
     State(tera): State<tera::Tera>,
     request: Request,
     next: Next,

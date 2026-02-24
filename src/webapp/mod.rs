@@ -127,19 +127,20 @@ pub async fn run_server() {
         .route("/goals/new", post(handlers::create_new_goal))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
-            handlers::check_auth,
+            handlers::auth_middleware,
         ))
         .route("/", get(handlers::get_index))
         .route("/login", get(handlers::get_login))
         .route("/login", post(handlers::post_login))
         .route("/logout", get(handlers::get_logout))
+        .route("/error", get(handlers::get_error_page))
         .merge(sso::sso_router())
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
                 .layer(middleware::from_fn_with_state(
                     app_state.clone(),
-                    handlers::error_page,
+                    handlers::error_middleware,
                 ))
                 .layer(AutoVaryLayer),
         )
