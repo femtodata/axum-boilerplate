@@ -1,4 +1,4 @@
-use axum_htmx::HxRequest;
+use axum_htmx::{HxRedirect, HxRequest};
 use diesel::prelude::*;
 use std::{collections::HashMap, str::FromStr};
 
@@ -213,6 +213,7 @@ pub async fn create_new_goal(
 // to be used as middleware
 pub async fn check_auth(
     jar: PrivateCookieJar,
+    HxRequest(hx_request): HxRequest,
     request: Request,
     next: Next,
 ) -> Result<Response, WebappError> {
@@ -220,6 +221,9 @@ pub async fn check_auth(
         info!("logged in user: {}", user);
     } else {
         let redirect_url = "/login?next_url=".to_string() + request.uri().to_string().as_str();
+        if hx_request {
+            return Ok((HxRedirect(redirect_url), "").into_response());
+        }
         return Ok((StatusCode::FOUND, Redirect::to(redirect_url.as_str())).into_response());
     }
     let response = next.run(request).await;
