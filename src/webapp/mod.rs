@@ -123,10 +123,8 @@ pub async fn run_server() {
 
     let app = Router::new()
         .route("/goals", get(handlers::get_goals))
-        .route(
-            "/goals/new",
-            get(handlers::new_goal).post(handlers::create_new_goal),
-        )
+        .route("/goals/new", get(handlers::new_goal))
+        .route("/goals/new", post(handlers::create_new_goal))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
             handlers::check_auth,
