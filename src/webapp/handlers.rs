@@ -1,4 +1,4 @@
-use axum_htmx::{HxRedirect, HxRequest};
+use axum_htmx::{HxEvent, HxRedirect, HxRequest, HxResponseTrigger};
 use diesel::prelude::*;
 use std::{collections::HashMap, str::FromStr};
 
@@ -160,42 +160,55 @@ pub async fn get_goals(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
-) -> Result<Html<String>, WebappError> {
-    let mut context = tera::Context::new();
+) -> Result<Response, WebappError> {
+    let rendered = render_goals(jar, state, tera)?;
 
+    Ok(Html(rendered).into_response())
+}
+
+fn render_goals(
+    jar: PrivateCookieJar,
+    state: AppState,
+    tera: tera::Tera,
+) -> Result<String, WebappError> {
+    let mut context = tera::Context::new();
     let username = match jar.get("user") {
         Some(user) => user.value().to_string(),
         None => return Err(WebappError::NotLoggedInError),
     };
-
     let mut conn = state.pool.clone().get()?;
     let user = users::table
         .filter(users::username.eq(&username))
         .first::<User>(&mut conn)?;
-
     let goals = Goal::belonging_to(&user).load::<Goal>(&mut conn)?;
-
     context.insert("user", &username);
-
     context.insert("title", "axum-boilerplate | Goals");
     context.insert("goals", &goals);
     context.insert("active", "goals");
-
     let rendered = tera.render("goals.html", &context)?;
-
-    Ok(Html(rendered))
+    Ok(rendered)
 }
 
 pub async fn new_goal(
     jar: PrivateCookieJar,
+    State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     HxRequest(hx_request): HxRequest,
-) -> Result<String, WebappError> {
-    // TODO: handle htmx path
-    let mut context = tera::Context::new();
-    let rendered = tera.render("goal-form.html", &context)?;
+) -> Result<Response, WebappError> {
+    if hx_request {
+        let context = tera::Context::new();
+        let rendered = tera.render("goal-form.html", &context)?;
 
-    Ok(rendered)
+        return Ok(rendered.into_response());
+    }
+
+    let rendered = render_goals(jar, state, tera)?;
+
+    Ok((
+        HxResponseTrigger::normal([HxEvent::new("new-event")]),
+        Html(rendered),
+    )
+        .into_response())
 }
 
 pub async fn create_new_goal(

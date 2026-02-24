@@ -11,7 +11,7 @@
   <button 
     hx-get="/goals/new"
     hx-target="#new-goal-modal-content"
-    hx-trigger="click"
+    hx-trigger="click, new-event from:body"
     data-bs-toggle="modal"
     data-bs-target="#new-goal-modal"
     class="btn btn-primary">
