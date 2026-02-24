@@ -221,6 +221,10 @@ pub async fn get_error_page(State(tera): State<tera::Tera>) -> Result<Response, 
     Ok(Html(rendered).into_response())
 }
 
+pub async fn get_test_error_page() -> Result<Response, WebappError> {
+    Err(WebappError::TestError)
+}
+
 // to be used as middleware
 pub async fn auth_middleware(
     jar: PrivateCookieJar,
@@ -244,7 +248,7 @@ pub async fn auth_middleware(
 
 // to be used with middleware::from_fn_with_state
 pub async fn error_middleware(
-    State(tera): State<tera::Tera>,
+    HxRequest(hx_request): HxRequest,
     request: Request,
     next: Next,
 ) -> Result<Response, WebappError> {
@@ -253,13 +257,16 @@ pub async fn error_middleware(
     let status_code = response.status();
 
     if status_code.is_server_error() {
-        let mut context = tera::Context::new();
+        if hx_request {
+            return Ok((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                HxRedirect("/error".to_string()),
+                "",
+            )
+                .into_response());
+        }
 
-        context.insert("content", "Something broke");
-
-        let rendered = tera.render("error.html", &context)?;
-
-        Ok(Html(rendered).into_response())
+        return Ok(Redirect::to("/error").into_response());
     } else {
         Ok(response)
     }

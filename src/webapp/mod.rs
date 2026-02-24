@@ -81,6 +81,9 @@ pub enum WebappError {
 
     #[error(transparent)]
     DieselResultError(#[from] diesel::result::Error),
+
+    #[error("Test error")]
+    TestError,
     // #[error(transparent)]
     // PolarsError(#[from] polars::prelude::PolarsError),
     //#[error(transparent)]
@@ -134,6 +137,7 @@ pub async fn run_server() {
         .route("/login", post(handlers::post_login))
         .route("/logout", get(handlers::get_logout))
         .route("/error", get(handlers::get_error_page))
+        .route("/test_error", get(handlers::get_test_error_page))
         .merge(sso::sso_router())
         .layer(
             ServiceBuilder::new()
