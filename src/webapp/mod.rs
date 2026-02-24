@@ -125,9 +125,9 @@ pub async fn run_server() {
     let app_state = AppState(Arc::new(InnerState { tera, key, pool }));
 
     let app = Router::new()
-        .route("/goals", get(handlers::get_goals))
-        .route("/goals/new", get(handlers::new_goal))
-        .route("/goals/new", post(handlers::create_new_goal))
+        .route("/goals", get(handlers::goal::get_goals))
+        .route("/goals/new", get(handlers::goal::new_goal))
+        .route("/goals/new", post(handlers::goal::create_new_goal))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
             handlers::auth_middleware,
