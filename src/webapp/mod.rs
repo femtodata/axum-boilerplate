@@ -82,6 +82,9 @@ pub enum WebappError {
     #[error(transparent)]
     DieselResultError(#[from] diesel::result::Error),
 
+    #[error("HxRequest expected but not found")]
+    HxRequestExpectedError,
+
     #[error("Test error")]
     TestError,
     // #[error(transparent)]

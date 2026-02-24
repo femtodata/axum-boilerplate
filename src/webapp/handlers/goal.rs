@@ -1,6 +1,7 @@
 use super::super::WebappError;
 use super::super::state::AppState;
 use crate::db::models::Goal;
+use crate::db::models::NewGoal;
 use crate::db::models::User;
 use crate::db::models::goal::GoalForm;
 use crate::db::schema::users;
@@ -72,15 +73,34 @@ pub async fn new_goal(
 
 pub async fn create_new_goal(
     jar: PrivateCookieJar,
+    State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     HxRequest(hx_request): HxRequest,
     Form(goal_form): Form<GoalForm>,
 ) -> Result<Response, WebappError> {
-    // TODO: handle htmx path
-    info!("goal_form: {:#?}", goal_form);
+    if !hx_request {
+        return Err(WebappError::HxRequestExpectedError);
+    }
+
+    let username = match jar.get("user") {
+        Some(user) => user.value().to_string(),
+        None => return Err(WebappError::NotLoggedInError),
+    };
+    let mut conn = state.pool.clone().get()?;
+    let user = users::table
+        .filter(users::username.eq(&username))
+        .first::<User>(&mut conn)?;
+
+    let new_goal = NewGoal {
+        title: goal_form.title,
+        description: goal_form.description,
+        notes: goal_form.notes,
+        user_id: user.id,
+    };
+
+    // TODO: rename create_new_goal
 
     let trigger = HxResponseTrigger::normal([HxEvent::new("trigger_close")]);
-    info!("{:#?}", trigger);
 
     Ok((trigger, "").into_response())
 }
