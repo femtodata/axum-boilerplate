@@ -161,7 +161,8 @@ pub async fn get_goals(
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
-    let rendered = render_goals(jar, state, tera)?;
+    let mut context = tera::Context::new();
+    let rendered = render_goals(jar, state, tera, &mut context)?;
 
     Ok(Html(rendered).into_response())
 }
@@ -170,8 +171,8 @@ fn render_goals(
     jar: PrivateCookieJar,
     state: AppState,
     tera: tera::Tera,
+    context: &mut tera::Context,
 ) -> Result<String, WebappError> {
-    let mut context = tera::Context::new();
     let username = match jar.get("user") {
         Some(user) => user.value().to_string(),
         None => return Err(WebappError::NotLoggedInError),
@@ -201,14 +202,11 @@ pub async fn new_goal(
 
         return Ok(rendered.into_response());
     }
+    let mut context = tera::Context::new();
+    context.insert("trigger-new", &true);
+    let rendered = render_goals(jar, state, tera, &mut context)?;
 
-    let rendered = render_goals(jar, state, tera)?;
-
-    Ok((
-        HxResponseTrigger::normal([HxEvent::new("new-event")]),
-        Html(rendered),
-    )
-        .into_response())
+    Ok(Html(rendered).into_response())
 }
 
 pub async fn create_new_goal(
