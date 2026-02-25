@@ -52,7 +52,7 @@ fn render_goals(
     Ok(rendered)
 }
 
-pub async fn new_goal(
+pub async fn get_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
@@ -71,7 +71,7 @@ pub async fn new_goal(
     Ok(Html(rendered).into_response())
 }
 
-pub async fn create_new_goal(
+pub async fn post_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
