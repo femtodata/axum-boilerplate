@@ -15,6 +15,7 @@ use termion::input::TermRead;
 
 use clap::{Parser, Subcommand};
 use tracing::info;
+use validator::Validate;
 
 #[derive(Debug, Parser)]
 struct Cli {
@@ -113,6 +114,10 @@ fn create_new_user_from_prompt() {
         hashed_password,
         email,
     };
+
+    if let Err(validation_errors) = new_user.validate() {
+        panic!("Validation errors: {:#?}", validation_errors);
+    }
 
     let user = create_new_user(&new_user, &mut conn).expect("error saving user");
 

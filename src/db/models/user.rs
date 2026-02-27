@@ -1,5 +1,7 @@
-use std::io::Write;
-
+use crate::{
+    db::schema::{self, users},
+    webapp::WebappError,
+};
 use diesel::{
     deserialize::{FromSql, FromSqlRow},
     expression::AsExpression,
@@ -7,17 +9,17 @@ use diesel::{
     prelude::*,
     serialize::{IsNull, ToSql},
 };
-
+use serde::Deserialize;
+use std::io::Write;
 use thiserror::Error;
+use validator::{Validate, ValidateEmail};
 
-use crate::{
-    db::schema::{self, users},
-    webapp::WebappError,
-};
-
-#[derive(Debug, Clone, PartialEq, AsExpression, FromSqlRow)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Validate, AsExpression, FromSqlRow)]
 #[diesel(sql_type = diesel::sql_types::Text)]
-pub struct EmailAddress(String);
+pub struct EmailAddress {
+    #[validate(email)]
+    address: String,
+}
 
 impl FromSql<diesel::sql_types::Text, Pg> for EmailAddress {
     fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
@@ -31,14 +33,14 @@ impl ToSql<diesel::sql_types::Text, Pg> for EmailAddress {
         &'b self,
         out: &mut diesel::serialize::Output<'b, '_, Pg>,
     ) -> diesel::serialize::Result {
-        out.write_all(self.0.as_bytes())?;
+        out.write_all(self.address.as_bytes())?;
         Ok(IsNull::No)
     }
 }
 
 impl AsRef<str> for EmailAddress {
     fn as_ref(&self) -> &str {
-        &self.0
+        &self.address
     }
 }
 
@@ -48,15 +50,20 @@ pub struct EmailAddressError(String);
 
 impl EmailAddress {
     pub fn new(raw_email: &str) -> Result<Self, EmailAddressError> {
-        if email_address::EmailAddress::is_valid(raw_email) {
-            Ok(Self(raw_email.into()))
+        // if email_address::EmailAddress::is_valid(raw_email) {
+        if raw_email.validate_email() {
+            Ok(Self {
+                address: raw_email.to_lowercase(),
+            })
         } else {
             Err(EmailAddressError(raw_email.into()))
         }
     }
 
     pub unsafe fn new_unchecked(raw_email: &str) -> Self {
-        Self(raw_email.to_string())
+        Self {
+            address: raw_email.to_string(),
+        }
     }
 }
 
@@ -71,10 +78,16 @@ pub struct User {
     pub email: Option<EmailAddress>,
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Deserialize, Validate, Insertable)]
 #[diesel(table_name = crate::db::schema::users)]
 pub struct NewUser {
+    #[validate(length(
+        min = 3,
+        max = 10,
+        message = "Username must be between 3 and 10 characters."
+    ))]
     pub username: String,
+    #[validate(nested)]
     pub email: Option<EmailAddress>,
     pub hashed_password: Option<String>,
 }
