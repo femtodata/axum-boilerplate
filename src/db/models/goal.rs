@@ -1,7 +1,8 @@
+use crate::db::{models::user::User, schema::goals};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use validator::{Validate, ValidationError};
 
-use crate::db::{models::user::User, schema::goals};
 #[derive(
     Debug,
     PartialEq,
@@ -34,11 +35,29 @@ pub struct NewGoal {
     pub user_id: i32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct GoalForm {
     pub title: String,
     pub description: String,
     pub notes: Option<String>,
+}
+
+fn validate_goal_title(title: &str, conn: &mut PgConnection) -> Result<(), ValidationError> {
+    let res = goals::table
+        .filter(goals::title.eq(title))
+        .select(goals::id)
+        .execute(conn);
+
+    if let Ok(rows) = res {
+        if rows > 0 {
+            return Err(ValidationError::new("duplicate_title")
+                .with_message("A goal with this title already exists."));
+        }
+        return Ok(());
+    } else {
+        return Err(ValidationError::new("duplicate_title")
+            .with_message("A goal with this title already exists."));
+    }
 }
 
 pub fn create_new_goal(
