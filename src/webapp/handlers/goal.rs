@@ -52,7 +52,7 @@ fn render_goals(
     Ok(rendered)
 }
 
-pub async fn get_new_goal(
+pub async fn hy_get_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
@@ -71,17 +71,13 @@ pub async fn get_new_goal(
     Ok(Html(rendered).into_response())
 }
 
-pub async fn post_new_goal(
+pub async fn hx_post_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     HxRequest(hx_request): HxRequest,
     Form(goal_form): Form<GoalForm>,
 ) -> Result<Response, WebappError> {
-    if !hx_request {
-        return Err(WebappError::HxRequestExpectedError);
-    }
-
     let username = match jar.get("user") {
         Some(user) => user.value().to_string(),
         None => return Err(WebappError::NotLoggedInError),

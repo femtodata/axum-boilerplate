@@ -8,7 +8,7 @@ use axum::{
     routing::{get, post},
 };
 use axum_extra::extract::cookie::Key;
-use axum_htmx::AutoVaryLayer;
+use axum_htmx::{AutoVaryLayer, HxRequestGuardLayer};
 use rand::distr::{Alphanumeric, SampleString};
 use state::{AppState, InnerState};
 use tera::Tera;
@@ -128,9 +128,12 @@ pub async fn run_server() {
     let app_state = AppState(Arc::new(InnerState { tera, key, pool }));
 
     let app = Router::new()
+        // htmx guarded routes, auth
+        .route("/goals/new", post(handlers::goal::hx_post_new_goal))
+        .route_layer(HxRequestGuardLayer::default())
+        // auth routes
         .route("/goals", get(handlers::goal::get_goals))
-        .route("/goals/new", get(handlers::goal::get_new_goal))
-        .route("/goals/new", post(handlers::goal::post_new_goal))
+        .route("/goals/new", get(handlers::goal::hy_get_new_goal))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
             handlers::auth_middleware,
