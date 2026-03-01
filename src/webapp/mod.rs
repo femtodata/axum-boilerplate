@@ -1,5 +1,4 @@
-use std::{collections::HashMap, env, sync::Arc};
-
+use crate::{db::get_connection_pool, get_config};
 use axum::{
     Router,
     http::StatusCode,
@@ -11,13 +10,12 @@ use axum_extra::extract::cookie::Key;
 use axum_htmx::{AutoVaryLayer, HxRequestGuardLayer};
 use rand::distr::{Alphanumeric, SampleString};
 use state::{AppState, InnerState};
+use std::{collections::HashMap, env, sync::Arc};
 use tera::Tera;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 use tracing::info;
-
-use crate::{db::get_connection_pool, get_config};
 
 mod handlers;
 mod sso;

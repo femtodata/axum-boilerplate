@@ -1,7 +1,8 @@
 <div class="modal-header">
   <h5 class="modal-title">New Goal</h5>
 </div>
-<form >
+<form hx-post="/goals/new"
+  hx-swap="none">
   <div class="modal-body">
     <div>
       <label for="title" class="form-label">Title<span class="text-danger">*</span></label>
@@ -18,8 +19,6 @@
   </div>
   <div class="modal-footer">
     <button type="submit"
-      hx-post="/goals/new"
-      hx-swap="none"
       class="btn btn-primary">
       Create
     </button>
