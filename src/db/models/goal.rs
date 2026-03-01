@@ -1,7 +1,10 @@
+use std::borrow::Cow;
+
 use crate::db::{models::user::User, schema::goals};
+use diesel::PgConnection;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidationError};
+use validator::{Validate, ValidateArgs, ValidationError};
 
 #[derive(
     Debug,
@@ -36,7 +39,9 @@ pub struct NewGoal {
 }
 
 #[derive(Debug, Deserialize, Validate)]
+#[validate(context = "PgConnection", mutable)]
 pub struct GoalForm {
+    #[validate(custom(function = "validate_goal_title", use_context))]
     pub title: String,
     pub description: String,
     pub notes: Option<String>,
@@ -51,12 +56,13 @@ fn validate_goal_title(title: &str, conn: &mut PgConnection) -> Result<(), Valid
     if let Ok(rows) = res {
         if rows > 0 {
             return Err(ValidationError::new("duplicate_title")
-                .with_message("A goal with this title already exists."));
+                .with_message(Cow::from("A goal with this title already exists.")));
         }
         return Ok(());
     } else {
-        return Err(ValidationError::new("duplicate_title")
-            .with_message("A goal with this title already exists."));
+        return Err(
+            ValidationError::new("db_error").with_message(Cow::from("An error has occurred"))
+        );
     }
 }
 

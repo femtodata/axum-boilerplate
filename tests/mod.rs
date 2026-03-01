@@ -1,13 +1,13 @@
-use diesel::prelude::*;
-use std::env;
-
 use axum_boilerplate::db::models::{
     EmailAddress, Goal, NewGoal, NewUser, User,
-    goal::create_new_goal,
+    goal::{GoalForm, create_new_goal},
     user::{create_new_user, hash_password, verify_password},
 };
 use database::run_migrations;
+use diesel::prelude::*;
 use dotenvy::dotenv;
+use std::env;
+use validator::{Validate, ValidateArgs};
 
 mod database;
 
@@ -30,6 +30,14 @@ fn get_goal_01(user_id: i32) -> NewGoal {
     }
 }
 
+fn get_goal_02_form() -> GoalForm {
+    GoalForm {
+        title: "Goal-02".to_string(),
+        description: "Goal-02 Description".to_string(),
+        notes: Some("Goal-02 notes".to_string()),
+    }
+}
+
 #[test]
 fn test_db_ops() {
     dotenv().unwrap();
@@ -46,6 +54,7 @@ fn test_db_ops() {
     let user = test_user(&mut conn);
     let goal = test_goal(&mut conn, &user);
     test_user_goal(&mut conn, &user, &goal);
+    test_goal_form(&mut conn, &user);
 }
 
 fn test_user(conn: &mut diesel::PgConnection) -> User {
@@ -90,4 +99,23 @@ fn test_user_goal(conn: &mut diesel::PgConnection, user: &User, goal: &Goal) {
         .unwrap();
 
     assert_eq!(true, goals.contains(goal));
+}
+
+fn test_goal_form(conn: &mut PgConnection, user: &User) {
+    println!("testing goal form");
+    let goal_form = get_goal_02_form();
+    let validation_result = goal_form.validate_with_args(conn);
+    assert!(validation_result.is_ok());
+    let new_goal = NewGoal {
+        title: goal_form.title,
+        description: goal_form.description,
+        notes: goal_form.notes,
+        user_id: user.id,
+    };
+    let goal = create_new_goal(&new_goal, conn)
+        .unwrap_or_else(|err| panic!("error creating new goal: {}", err));
+    assert_eq!(goal.title, new_goal.title);
+    assert_eq!(goal.description, new_goal.description);
+    assert_eq!(goal.notes, new_goal.notes);
+    assert_eq!(goal.user_id, new_goal.user_id);
 }
