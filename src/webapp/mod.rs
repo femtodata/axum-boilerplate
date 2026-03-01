@@ -160,8 +160,3 @@ pub async fn run_server() {
 
     axum::serve(listener, app).await.unwrap();
 }
-
-// fn add_templates<'a>() -> Environment<'a> {
-fn add_templates<'a>() {
-    todo!()
-}
