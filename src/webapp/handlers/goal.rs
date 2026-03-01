@@ -17,6 +17,7 @@ use axum_htmx::HxResponseTrigger;
 use axum_htmx::HxTrigger;
 use diesel::prelude::*;
 use tracing::info;
+use validator::ValidateArgs;
 
 pub async fn get_goals(
     jar: PrivateCookieJar,
@@ -86,6 +87,18 @@ pub async fn hx_post_new_goal(
     let user = users::table
         .filter(users::username.eq(&username))
         .first::<User>(&mut conn)?;
+
+    let validation_result = goal_form.validate_with_args(&mut conn);
+    if let Err(validation_error) = validation_result {
+        let alert = format!(
+            "<div id='alert'
+            hx-swap-oob='true'
+            class='alert alert-danger'
+            role='alert'>{:#?}</div>",
+            validation_error
+        );
+        return Ok(Html(alert).into_response());
+    };
 
     let new_goal = NewGoal {
         title: goal_form.title,

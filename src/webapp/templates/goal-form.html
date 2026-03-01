@@ -4,6 +4,11 @@
 <form hx-post="/goals/new"
   hx-swap="none">
   <div class="modal-body">
+    <div id="alert"
+      class="alert alert-danger"
+      role="alert"
+      style="display: none;">
+    </div>
     <div>
       <label for="title" class="form-label">Title<span class="text-danger">*</span></label>
       <input id="title" name="title" type="text" class="form-control" required>
