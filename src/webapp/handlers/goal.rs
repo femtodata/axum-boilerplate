@@ -57,6 +57,28 @@ fn render_goals(
     Ok(rendered)
 }
 
+pub async fn hx_get_goals_table(
+    jar: PrivateCookieJar,
+    State(state): State<AppState>,
+    State(tera): State<tera::Tera>,
+) -> Result<Response, WebappError> {
+    let username = match jar.get("user") {
+        Some(user) => user.value().to_string(),
+        None => return Err(WebappError::NotLoggedInError),
+    };
+    let mut conn = state.pool.clone().get()?;
+    let user = users::table
+        .filter(users::username.eq(&username))
+        .first::<User>(&mut conn)?;
+    let goals = Goal::belonging_to(&user).load::<Goal>(&mut conn)?;
+
+    let mut context = tera::Context::new();
+    context.insert("goals", &goals);
+    let rendered = tera.render("fragments/goals-table.html", &context)?;
+
+    Ok(Html(rendered).into_response())
+}
+
 pub async fn hy_get_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
@@ -139,10 +161,13 @@ pub async fn hx_post_new_goal(
         user_id: user.id,
     };
 
-    let goal = create_new_goal(&new_goal, &mut conn)?;
+    let _goal = create_new_goal(&new_goal, &mut conn)?;
 
     // don't need to push url, closing modal via trigger handles url history
-    let trigger = HxResponseTrigger::normal([HxEvent::new("trigger_close")]);
+    let trigger = HxResponseTrigger::normal([
+        HxEvent::new("trigger_close"),
+        HxEvent::new("trigger_table_reload"),
+    ]);
 
     Ok((trigger, "").into_response())
 }

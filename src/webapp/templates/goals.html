@@ -21,7 +21,7 @@
     </button>
   </div>
   <div id="goals-table">
-    {% include "fragments/goal-table.html" %}
+    {% include "fragments/goals-table.html" %}
   </div>
   <!-- modal -->
   <div id="new-goal-modal"
@@ -42,6 +42,9 @@
   };
   document.body.addEventListener("trigger_close", function(evt){
     closeGoalModal();
+  });
+  document.body.addEventListener("trigger_table_reload", function(evt) {
+    htmx.ajax("GET", "/goals/table", "#goals-table");
   });
   {% if trigger_new %}
     window.onload = function() {

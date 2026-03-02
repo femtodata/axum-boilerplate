@@ -127,6 +127,7 @@ pub async fn run_server() {
 
     let app = Router::new()
         // htmx guarded routes, auth
+        .route("/goals/table", get(handlers::goal::hx_get_goals_table))
         .route("/goals/new", post(handlers::goal::hx_post_new_goal))
         .route_layer(HxRequestGuardLayer::default())
         // auth routes
