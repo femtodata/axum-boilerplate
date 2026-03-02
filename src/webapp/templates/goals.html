@@ -20,7 +20,9 @@
       New
     </button>
   </div>
-  {% include "fragments/goal-table.html" %}
+  <div id="goals-table">
+    {% include "fragments/goal-table.html" %}
+  </div>
   <!-- modal -->
   <div id="new-goal-modal"
     class="modal modal-blur fade"
@@ -33,8 +35,13 @@
     </div>
   </div>
   <script>
+  const goalModal = new bootstrap.Modal('#new-goal-modal');
+  function closeGoalModal() {
+    goalModal.hide();
+    history.pushState({}, "", "/goals");
+  };
   document.body.addEventListener("trigger_close", function(evt){
-    document.getElementById('close-goal-form').click();
+    closeGoalModal();
   });
   {% if trigger_new %}
     window.onload = function() {

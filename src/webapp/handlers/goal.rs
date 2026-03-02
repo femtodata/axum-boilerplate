@@ -13,6 +13,7 @@ use axum::response::IntoResponse;
 use axum::response::Response;
 use axum_extra::extract::PrivateCookieJar;
 use axum_htmx::HxEvent;
+use axum_htmx::HxPushUrl;
 use axum_htmx::HxRequest;
 use axum_htmx::HxResponseTrigger;
 use axum_htmx::HxTrigger;
@@ -139,6 +140,7 @@ pub async fn hx_post_new_goal(
     let goal = create_new_goal(&new_goal, &mut conn)?;
 
     let trigger = HxResponseTrigger::normal([HxEvent::new("trigger_close")]);
+    let push_url = HxPushUrl("/goals".to_string());
 
-    Ok((trigger, "").into_response())
+    Ok((trigger, push_url, "").into_response())
 }
