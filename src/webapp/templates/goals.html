@@ -20,15 +20,7 @@
       New
     </button>
   </div>
-  <table class="table-bordered w-100 border mt-2">
-    {% for goal in goals %}
-      <tr>
-        <td>{{ goal["title"] }}</td>
-        <td>{{ goal["description"] }}</td>
-        <td>{{ goal["notes"] }}</td>
-      </tr>
-    {% endfor %}
-  </table>
+  {% include "fragments/goal-table.html" %}
   <!-- modal -->
   <div id="new-goal-modal"
     class="modal modal-blur fade"
