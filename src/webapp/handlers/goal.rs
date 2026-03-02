@@ -4,6 +4,7 @@ use crate::db::models::Goal;
 use crate::db::models::NewGoal;
 use crate::db::models::User;
 use crate::db::models::goal::GoalForm;
+use crate::db::models::goal::create_new_goal;
 use crate::db::schema::users;
 use axum::extract::Form;
 use axum::extract::State;
@@ -135,7 +136,7 @@ pub async fn hx_post_new_goal(
         user_id: user.id,
     };
 
-    // TODO: rename create_new_goal
+    let goal = create_new_goal(&new_goal, &mut conn)?;
 
     let trigger = HxResponseTrigger::normal([HxEvent::new("trigger_close")]);
 
