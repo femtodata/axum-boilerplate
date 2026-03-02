@@ -92,6 +92,7 @@ pub async fn hx_post_new_goal(
         .filter(users::username.eq(&username))
         .first::<User>(&mut conn)?;
 
+    // validate form, see GoalForm impl
     let validation_result = goal_form.validate_with_args(&mut conn);
     let validation_error_messages = validation_result.err().and_then(|errors| {
         let es = errors
@@ -109,6 +110,7 @@ pub async fn hx_post_new_goal(
         Some(es)
     });
 
+    // if errors, pull out messages and return as bullet list fragment
     if let Some(messages) = validation_error_messages {
         let alert = formatdoc!(
             "
@@ -139,8 +141,8 @@ pub async fn hx_post_new_goal(
 
     let goal = create_new_goal(&new_goal, &mut conn)?;
 
+    // don't need to push url, closing modal via trigger handles url history
     let trigger = HxResponseTrigger::normal([HxEvent::new("trigger_close")]);
-    let push_url = HxPushUrl("/goals".to_string());
 
-    Ok((trigger, push_url, "").into_response())
+    Ok((trigger, "").into_response())
 }
