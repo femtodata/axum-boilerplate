@@ -64,7 +64,7 @@ pub async fn hy_get_new_goal(
 ) -> Result<Response, WebappError> {
     if hx_request {
         let context = tera::Context::new();
-        let rendered = tera.render("goal-form.html", &context)?;
+        let rendered = tera.render("fragments/goal-form.html", &context)?;
 
         return Ok(rendered.into_response());
     }

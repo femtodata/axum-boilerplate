@@ -7,48 +7,48 @@
   {% endif %}
 {% endblock title %}
 {% block content %}
-<div class="mt-2 border-5 w-100">
-  <button 
-    id="button-new"
-    hx-get="/goals/new"
-    hx-push-url="true"
-    hx-target="#new-goal-modal-content"
-    hx-trigger="click"
-    data-bs-toggle="modal"
-    data-bs-target="#new-goal-modal"
-    class="btn btn-primary">
-    New
-  </button>
-</div>
-<table class="table-bordered w-100 border mt-2">
-  {% for goal in goals %}
-    <tr>
-      <td>{{ goal["title"] }}</td>
-      <td>{{ goal["description"] }}</td>
-      <td>{{ goal["notes"] }}</td>
-    </tr>
-  {% endfor %}
-</table>
-<!-- modal -->
-<div id="new-goal-modal"
-  class="modal modal-blur fade"
-  style="display: none"
-  aria-hidden="false"
-  tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div id="new-goal-modal-content" class="modal-content">
+  <div class="mt-2 border-5 w-100">
+    <button 
+      id="button-new"
+      hx-get="/goals/new"
+      hx-push-url="true"
+      hx-target="#new-goal-modal-content"
+      hx-trigger="click"
+      data-bs-toggle="modal"
+      data-bs-target="#new-goal-modal"
+      class="btn btn-primary">
+      New
+    </button>
+  </div>
+  <table class="table-bordered w-100 border mt-2">
+    {% for goal in goals %}
+      <tr>
+        <td>{{ goal["title"] }}</td>
+        <td>{{ goal["description"] }}</td>
+        <td>{{ goal["notes"] }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+  <!-- modal -->
+  <div id="new-goal-modal"
+    class="modal modal-blur fade"
+    style="display: none"
+    aria-hidden="false"
+    tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div id="new-goal-modal-content" class="modal-content">
+      </div>
     </div>
   </div>
-</div>
-<script>
-document.body.addEventListener("trigger_close", function(evt){
-  document.getElementById('close-goal-form').click();
-});
-{% if trigger_new %}
-window.onload = function() {
-  document.getElementById('button-new').click();
-};
-{% endif %}
-</script>
-<!-- end modal -->
+  <script>
+  document.body.addEventListener("trigger_close", function(evt){
+    document.getElementById('close-goal-form').click();
+  });
+  {% if trigger_new %}
+    window.onload = function() {
+      document.getElementById('button-new').click();
+    };
+  {% endif %}
+  </script>
+  <!-- end modal -->
 {% endblock content %}
