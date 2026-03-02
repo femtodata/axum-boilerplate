@@ -16,8 +16,10 @@ use axum_htmx::HxRequest;
 use axum_htmx::HxResponseTrigger;
 use axum_htmx::HxTrigger;
 use diesel::prelude::*;
+use indoc::formatdoc;
 use tracing::info;
 use validator::ValidateArgs;
+use validator::ValidationErrorsKind;
 
 pub async fn get_goals(
     jar: PrivateCookieJar,
@@ -89,13 +91,39 @@ pub async fn hx_post_new_goal(
         .first::<User>(&mut conn)?;
 
     let validation_result = goal_form.validate_with_args(&mut conn);
-    if let Err(validation_error) = validation_result {
-        let alert = format!(
-            "<div id='alert'
-            hx-swap-oob='true'
-            class='alert alert-danger'
-            role='alert'>{:#?}</div>",
-            validation_error
+    let validation_error_messages = validation_result.err().and_then(|errors| {
+        let es = errors
+            .0 // inner HashMap
+            .into_iter()
+            .filter_map(|(_k, v)| match v {
+                // only want the Field types
+                ValidationErrorsKind::Field(validation_errors) => Some(validation_errors),
+                _ => None,
+            })
+            .flatten() // because fields can have multiple errors
+            .filter_map(|validation_error| validation_error.message)
+            .map(|message| message.to_string())
+            .collect::<Vec<_>>();
+        Some(es)
+    });
+
+    if let Some(messages) = validation_error_messages {
+        let alert = formatdoc!(
+            "
+            <div id='alert'
+                hx-swap-oob='true'
+                class='alert alert-danger'
+                role='alert'>
+                <ul class='mb-0'>
+                    {}
+                </ul
+            </div>
+            ",
+            messages
+                .iter()
+                .map(|x| format!("<li>{x}</li>"))
+                .collect::<Vec<_>>()
+                .join("")
         );
         return Ok(Html(alert).into_response());
     };
