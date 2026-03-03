@@ -180,5 +180,9 @@ pub async fn hx_get_goal(
         .first::<Goal>(&mut conn)?;
     debug!("goal: {:#?}", goal);
 
-    Ok("".into_response())
+    let mut context = tera::Context::new();
+    context.insert("goal", &goal);
+    let rendered = tera.render("fragments/goal-detail.html", &context)?;
+
+    Ok(Html(rendered).into_response())
 }

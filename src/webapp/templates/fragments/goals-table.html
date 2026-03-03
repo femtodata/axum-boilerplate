@@ -3,7 +3,11 @@
       <tr>
         <td>
           <a hx-get="/goals/{{ goal["id"]}}"
-            hx-swap="none">{{ goal["title"] }}</a>
+            hx-target="#goals-modal-content"
+            data-bs-toggle="modal"
+            data-bs-target="#goals-modal">
+            {{ goal["title"] }}
+          </a>
         </td>
         <td>{{ goal["description"] }}</td>
       </tr>
