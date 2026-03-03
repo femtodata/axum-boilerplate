@@ -12,10 +12,10 @@
       id="button-new"
       hx-get="/goals/new"
       hx-push-url="true"
-      hx-target="#new-goal-modal-content"
+      hx-target="#goals-modal-content"
       hx-trigger="click"
       data-bs-toggle="modal"
-      data-bs-target="#new-goal-modal"
+      data-bs-target="#goals-modal"
       class="btn btn-primary">
       New
     </button>
@@ -24,18 +24,18 @@
     {% include "fragments/goals-table.html" %}
   </div>
   <!-- modal -->
-  <div id="new-goal-modal"
+  <div id="goals-modal"
     class="modal modal-blur fade"
     style="display: none"
     aria-hidden="false"
     tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-      <div id="new-goal-modal-content" class="modal-content">
+      <div id="goals-modal-content" class="modal-content">
       </div>
     </div>
   </div>
   <script>
-  const goalModal = new bootstrap.Modal('#new-goal-modal');
+  const goalModal = new bootstrap.Modal('#goals-modal');
   function closeGoalModal() {
     goalModal.hide();
     history.pushState({}, "", "/goals");
