@@ -1,14 +1,11 @@
-use std::env;
-
+use super::OauthClient;
+use crate::webapp::WebappError;
 use openidconnect::{
     ClientId, ClientSecret, IssuerUrl, RedirectUrl,
     core::{CoreClient, CoreProviderMetadata},
     reqwest,
 };
-
-use crate::webapp::WebappError;
-
-use super::OauthClient;
+use std::env;
 
 pub async fn oauth_client() -> Result<OauthClient, WebappError> {
     let client_id = ClientId::new(

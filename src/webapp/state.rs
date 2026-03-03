@@ -1,11 +1,10 @@
-use std::{collections::HashMap, ops::Deref, sync::Arc};
-
 use axum::extract::FromRef;
 use axum_extra::extract::cookie::Key;
 use diesel::{
     PgConnection,
     r2d2::{ConnectionManager, Pool},
 };
+use std::{ops::Deref, sync::Arc};
 use tera::Tera;
 
 // AppState shenanigans, because CookieJar

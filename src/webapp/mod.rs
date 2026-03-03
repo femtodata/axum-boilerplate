@@ -10,7 +10,7 @@ use axum_extra::extract::cookie::Key;
 use axum_htmx::{AutoVaryLayer, HxRequestGuardLayer};
 use rand::distr::{Alphanumeric, SampleString};
 use state::{AppState, InnerState};
-use std::{collections::HashMap, env, sync::Arc};
+use std::{env, sync::Arc};
 use tera::Tera;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;

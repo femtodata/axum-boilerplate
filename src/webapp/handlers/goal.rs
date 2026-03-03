@@ -1,27 +1,20 @@
-use super::super::WebappError;
-use super::super::state::AppState;
-use crate::db::models::Goal;
-use crate::db::models::NewGoal;
-use crate::db::models::User;
-use crate::db::models::goal::GoalForm;
-use crate::db::models::goal::create_new_goal;
-use crate::db::schema::users;
-use axum::extract::Form;
-use axum::extract::State;
-use axum::response::Html;
-use axum::response::IntoResponse;
-use axum::response::Response;
+use super::super::{WebappError, state::AppState};
+use crate::db::{
+    models::{
+        Goal, NewGoal, User,
+        goal::{GoalForm, create_new_goal},
+    },
+    schema::users,
+};
+use axum::{
+    extract::{Form, State},
+    response::{Html, IntoResponse, Response},
+};
 use axum_extra::extract::PrivateCookieJar;
-use axum_htmx::HxEvent;
-use axum_htmx::HxPushUrl;
-use axum_htmx::HxRequest;
-use axum_htmx::HxResponseTrigger;
-use axum_htmx::HxTrigger;
+use axum_htmx::{HxEvent, HxRequest, HxResponseTrigger};
 use diesel::prelude::*;
 use indoc::formatdoc;
-use tracing::info;
-use validator::ValidateArgs;
-use validator::ValidationErrorsKind;
+use validator::{ValidateArgs, ValidationErrorsKind};
 
 pub async fn get_goals(
     jar: PrivateCookieJar,

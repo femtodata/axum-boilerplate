@@ -1,33 +1,29 @@
-use std::collections::HashMap;
-use std::str::FromStr;
-
-use axum::Router;
-use axum::extract::{Path, Query, State};
-use axum::http::HeaderMap;
-use axum::response::{Html, IntoResponse, Redirect, Response};
-use axum::routing::get;
-use axum_extra::extract::PrivateCookieJar;
-use axum_extra::extract::cookie::Cookie;
-use openidconnect::core::{
-    CoreAuthDisplay, CoreAuthPrompt, CoreErrorResponseType, CoreGenderClaim, CoreJsonWebKey,
-    CoreJweContentEncryptionAlgorithm, CoreJwsSigningAlgorithm, CoreRevocableToken, CoreTokenType,
-};
-use openidconnect::{AuthenticationFlow, CsrfToken, Nonce, Scope, core::CoreResponseType, reqwest};
-use openidconnect::{
-    AuthorizationCode, Client, EmptyAdditionalClaims, EmptyExtraTokenFields, EndpointMaybeSet,
-    EndpointNotSet, EndpointSet, IdTokenFields, RevocationErrorResponseType, StandardErrorResponse,
-    StandardTokenIntrospectionResponse, StandardTokenResponse, TokenResponse,
-};
-use serde::Deserialize;
-use tracing::{debug, info};
-use url::Url;
-
 use super::WebappError;
 use super::handlers;
 use super::state::AppState;
-
-use crate::db;
 use crate::db::models::user::get_user_by_email;
+use axum::Router;
+use axum::extract::{Path, Query, State};
+use axum::http::HeaderMap;
+use axum::response::{IntoResponse, Redirect};
+use axum::routing::get;
+use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
+use openidconnect::core::CoreErrorResponseType;
+use openidconnect::core::CoreRevocableToken;
+use openidconnect::core::CoreTokenType;
+use openidconnect::{
+    AuthenticationFlow, AuthorizationCode, Client, CsrfToken, EmptyAdditionalClaims,
+    EmptyExtraTokenFields, EndpointMaybeSet, EndpointNotSet, EndpointSet, IdTokenFields, Nonce,
+    RevocationErrorResponseType, Scope, StandardErrorResponse, StandardTokenIntrospectionResponse,
+    StandardTokenResponse, TokenResponse,
+    core::{
+        CoreAuthDisplay, CoreAuthPrompt, CoreGenderClaim, CoreJsonWebKey,
+        CoreJweContentEncryptionAlgorithm, CoreJwsSigningAlgorithm, CoreResponseType,
+    },
+    reqwest,
+};
+use serde::Deserialize;
+use tracing::debug;
 
 pub mod google_sso;
 pub mod microsoft_sso;

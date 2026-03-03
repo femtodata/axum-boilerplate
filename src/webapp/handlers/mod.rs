@@ -1,6 +1,4 @@
-use axum_htmx::{HxRedirect, HxRequest};
-use std::str::FromStr;
-
+use crate::db::models::user::{get_user_by_username, verify_password};
 use axum::{
     extract::{Form, Query, Request, State},
     http::{HeaderMap, StatusCode},
@@ -8,18 +6,12 @@ use axum::{
     response::{Html, IntoResponse, Redirect, Response},
 };
 use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
+use axum_htmx::{HxRedirect, HxRequest};
 use serde::Deserialize;
-use tracing::{debug, info};
+use std::str::FromStr;
+use tracing::debug;
 use url::Url;
 use validator::{Validate, ValidationErrorsKind};
-
-use crate::db::{
-    models::{
-        goal::GoalForm,
-        user::{get_user_by_username, verify_password},
-    },
-    schema::users,
-};
 
 pub mod goal;
 
