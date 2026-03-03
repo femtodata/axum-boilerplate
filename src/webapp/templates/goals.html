@@ -11,7 +11,6 @@
     <button 
       id="button-new"
       hx-get="/goals/new"
-      hx-push-url="true"
       hx-target="#goals-modal-content"
       hx-trigger="click"
       data-bs-toggle="modal"
@@ -46,11 +45,6 @@
   document.body.addEventListener("trigger_table_reload", function(evt) {
     htmx.ajax("GET", "/goals/table", "#goals-table");
   });
-  {% if trigger_new %}
-    window.onload = function() {
-      document.getElementById('button-new').click();
-    };
-  {% endif %}
   </script>
   <!-- end modal -->
 {% endblock content %}

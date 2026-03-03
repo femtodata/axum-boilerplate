@@ -72,23 +72,16 @@ pub async fn hx_get_goals_table(
     Ok(Html(rendered).into_response())
 }
 
-pub async fn hy_get_new_goal(
+pub async fn hx_get_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     HxRequest(hx_request): HxRequest,
 ) -> Result<Response, WebappError> {
-    if hx_request {
-        let context = tera::Context::new();
-        let rendered = tera.render("fragments/goal-form.html", &context)?;
+    let context = tera::Context::new();
+    let rendered = tera.render("fragments/goal-form.html", &context)?;
 
-        return Ok(rendered.into_response());
-    }
-    let mut context = tera::Context::new();
-    context.insert("trigger_new", "true");
-    let rendered = render_goals(jar, state, tera, &mut context)?;
-
-    Ok(Html(rendered).into_response())
+    return Ok(Html(rendered).into_response());
 }
 
 pub async fn hx_post_new_goal(
