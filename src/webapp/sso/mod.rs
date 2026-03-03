@@ -19,7 +19,7 @@ use openidconnect::{
     StandardTokenIntrospectionResponse, StandardTokenResponse, TokenResponse,
 };
 use serde::Deserialize;
-use tracing::info;
+use tracing::{debug, info};
 use url::Url;
 
 use super::WebappError;
@@ -138,7 +138,7 @@ async fn get_sso_callback(
     let claims = id_token.claims(&id_token_verifier, always_verify_nonce)?;
 
     let email = claims.email().ok_or(WebappError::MissingEmailError)?;
-    info!("sso login email: {email:#?}");
+    debug!("sso login email: {email:#?}");
 
     // println!("params: {:#?}", params);
     // println!("token_response: {:#?}", token_response);
@@ -165,7 +165,7 @@ async fn get_sso_callback(
     let mut updated_jar = jar.add(Cookie::build(("user", user.username)).path("/"));
 
     if let Some(next_url) = updated_jar.get("next_url") {
-        info!("next_url: {:#?}", next_url.value_trimmed());
+        debug!("next_url: {:#?}", next_url.value_trimmed());
         updated_jar = updated_jar.remove(Cookie::from("next_url"));
         return Ok((
             updated_jar,
