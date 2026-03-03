@@ -4,16 +4,17 @@ use crate::db::{
         Goal, NewGoal, User,
         goal::{GoalForm, create_new_goal},
     },
-    schema::users,
+    schema::{goals, users},
 };
 use axum::{
-    extract::{Form, State},
+    extract::{Form, Path, State},
     response::{Html, IntoResponse, Response},
 };
 use axum_extra::extract::PrivateCookieJar;
 use axum_htmx::{HxEvent, HxRequest, HxResponseTrigger};
 use diesel::prelude::*;
 use indoc::formatdoc;
+use tracing::{debug, info};
 use validator::{ValidateArgs, ValidationErrorsKind};
 
 pub async fn get_goals(
@@ -156,4 +157,28 @@ pub async fn hx_post_new_goal(
     ]);
 
     Ok((trigger, "").into_response())
+}
+
+pub async fn hx_get_goal(
+    Path(id): Path<i32>,
+    State(state): State<AppState>,
+    State(tera): State<tera::Tera>,
+    jar: PrivateCookieJar,
+) -> Result<Response, WebappError> {
+    debug!("getting goal with id {}", id);
+    let username = match jar.get("user") {
+        Some(user) => user.value().to_string(),
+        None => return Err(WebappError::NotLoggedInError),
+    };
+    let mut conn = state.pool.clone().get()?;
+    let user = users::table
+        .filter(users::username.eq(&username))
+        .first::<User>(&mut conn)?;
+
+    let goal = goals::table
+        .filter(goals::user_id.eq(user.id).and(goals::id.eq(id)))
+        .first::<Goal>(&mut conn)?;
+    debug!("goal: {:#?}", goal);
+
+    Ok("".into_response())
 }

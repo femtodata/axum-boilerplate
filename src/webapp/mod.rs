@@ -130,6 +130,7 @@ pub async fn run_server() {
         .route("/goals/table", get(handlers::goal::hx_get_goals_table))
         .route("/goals/new", get(handlers::goal::hx_get_new_goal))
         .route("/goals/new", post(handlers::goal::hx_post_new_goal))
+        .route("/goals/{id}", get(handlers::goal::hx_get_goal))
         .route_layer(HxRequestGuardLayer::default())
         // auth routes
         .route("/goals", get(handlers::goal::get_goals))
