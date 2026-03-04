@@ -186,3 +186,37 @@ pub async fn hx_get_goal(
 
     Ok(Html(rendered).into_response())
 }
+
+pub async fn hx_delete_goal(
+    Path(id): Path<i32>,
+    State(state): State<AppState>,
+    State(tera): State<tera::Tera>,
+    jar: PrivateCookieJar,
+) -> Result<Response, WebappError> {
+    debug!("getting goal with id {}", id);
+    let username = match jar.get("user") {
+        Some(user) => user.value().to_string(),
+        None => return Err(WebappError::NotLoggedInError),
+    };
+    let mut conn = state.pool.clone().get()?;
+    let user = users::table
+        .filter(users::username.eq(&username))
+        .first::<User>(&mut conn)?;
+
+    let res = diesel::delete(goals::table.filter(goals::id.eq(id).and(goals::user_id.eq(user.id))))
+        .execute(&mut conn)?;
+
+    if res == 0 {
+        return Err(WebappError::DieselResultError(
+            diesel::result::Error::NotFound,
+        ));
+    }
+
+    // don't need to push url, closing modal via trigger handles url history
+    let trigger = HxResponseTrigger::normal([
+        HxEvent::new("trigger_close"),
+        HxEvent::new("trigger_table_reload"),
+    ]);
+
+    Ok((trigger, "").into_response())
+}
