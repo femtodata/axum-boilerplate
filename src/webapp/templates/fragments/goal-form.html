@@ -1,7 +1,18 @@
 <div class="modal-header">
-  <h5 class="modal-title">New Goal</h5>
+  <h5 class="modal-title">
+    {% if edit %}
+      Edit Goal
+    {% else %}
+      New Goal
+    {% endif %}
+  </h5>
 </div>
-<form hx-post="/goals/new"
+<form 
+  {% if edit %}
+    hx-patch="/goals/{{ goal['id'] }}"
+  {% else %}
+    hx-post="/goals/new"
+  {% endif %}
   hx-swap="none">
   <div class="modal-body">
     <div id="alert"
@@ -11,26 +22,49 @@
     </div>
     <div>
       <label for="title" class="form-label">Title<span class="text-danger">*</span></label>
-      <input id="title" name="title" type="text" class="form-control" required>
+      <input 
+        id="title"
+        name="title"
+        type="text"
+        {% if goal %}
+          value="{{ goal["title"] }}"
+        {% endif %}
+        class="form-control"
+        required>
     </div>
     <div class="mt-3">
       <label for="description" class="form-label">Description<span class="text-danger">*</span></label>
-      <input id="description" name="description" type="text" class="form-control" required>
+      <input 
+        id="description"
+        name="description"
+        type="text"
+        {% if goal %}
+          value="{{ goal["description"] }}"
+        {% endif %}
+        class="form-control"
+        required>
     </div>
     <div class="mt-3">
       <label for="notes" class="form-label">Notes</label>
-      <input id="notes" name="notes" type="text" class="form-control">
+      <input 
+        id="notes" 
+        name="notes" 
+        type="text" 
+        {% if goal %}
+          value="{{ goal["notes"] }}"
+        {% endif %}
+        class="form-control">
     </div>
   </div>
   <div class="modal-footer">
     <button type="submit"
       class="btn btn-primary">
-      Create
+      Save
     </button>
     <button type="button"
       class="btn btn-secondary"
       onClick="closeGoalModal();">
-      Close
+      Cancel
     </button>
   </div>
 </form>

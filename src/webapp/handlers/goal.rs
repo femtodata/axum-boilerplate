@@ -2,7 +2,7 @@ use super::super::{WebappError, state::AppState};
 use crate::db::{
     models::{
         Goal, NewGoal, User,
-        goal::{GoalForm, create_new_goal},
+        goal::{GoalContext, GoalForm, create_new_goal},
     },
     schema::{goals, users},
 };
@@ -77,7 +77,6 @@ pub async fn hx_get_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
-    HxRequest(hx_request): HxRequest,
 ) -> Result<Response, WebappError> {
     let context = tera::Context::new();
     let rendered = tera.render("fragments/goal-form.html", &context)?;
@@ -89,7 +88,6 @@ pub async fn hx_post_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
-    HxRequest(hx_request): HxRequest,
     Form(goal_form): Form<GoalForm>,
 ) -> Result<Response, WebappError> {
     let username = match jar.get("user") {
@@ -101,45 +99,15 @@ pub async fn hx_post_new_goal(
         .filter(users::username.eq(&username))
         .first::<User>(&mut conn)?;
 
-    // validate form, see GoalForm impl
-    let validation_result = goal_form.validate_with_args(&mut conn);
-    let validation_error_messages = validation_result.err().and_then(|errors| {
-        let es = errors
-            .0 // inner HashMap
-            .into_iter()
-            .filter_map(|(_k, v)| match v {
-                // only want the Field types
-                ValidationErrorsKind::Field(validation_errors) => Some(validation_errors),
-                _ => None,
-            })
-            .flatten() // because fields can have multiple errors
-            .filter_map(|validation_error| validation_error.message)
-            .map(|message| message.to_string())
-            .collect::<Vec<_>>();
-        Some(es)
-    });
-
-    // if errors, pull out messages and return as bullet list fragment
-    if let Some(messages) = validation_error_messages {
-        let alert = formatdoc!(
-            "
-            <div id='alert'
-                hx-swap-oob='true'
-                class='alert alert-danger'
-                role='alert'>
-                <ul class='mb-0'>
-                    {}
-                </ul
-            </div>
-            ",
-            messages
-                .iter()
-                .map(|x| format!("<li>{x}</li>"))
-                .collect::<Vec<_>>()
-                .join("")
-        );
-        return Ok(Html(alert).into_response());
+    let mut context = GoalContext {
+        conn: &mut conn,
+        current_title: None,
     };
+    let alert = validate_goal_form_extract_alert(&goal_form, &mut context);
+
+    if let Some(alert) = alert {
+        return Ok(Html(alert).into_response());
+    }
 
     let new_goal = NewGoal {
         title: goal_form.title,
@@ -157,6 +125,52 @@ pub async fn hx_post_new_goal(
     ]);
 
     Ok((trigger, "").into_response())
+}
+
+fn validate_goal_form_extract_alert<'a>(
+    goal_form: &GoalForm,
+    context: &'a mut GoalContext<'a>,
+) -> Option<String> {
+    // validate form, see GoalForm impl
+    let validation_result = goal_form.validate_with_args(context);
+    let validation_error_messages = validation_result.err().and_then(|errors| {
+        let es = errors
+            .0 // inner HashMap
+            .into_iter()
+            .filter_map(|(_k, v)| match v {
+                // only want the Field types
+                ValidationErrorsKind::Field(validation_errors) => Some(validation_errors),
+                _ => None,
+            })
+            .flatten() // because fields can have multiple errors
+            .filter_map(|validation_error| validation_error.message)
+            .map(|message| message.to_string())
+            .collect::<Vec<_>>();
+        Some(es)
+    });
+
+    // if errors, pull out messages and return as bullet list fragment
+    let alert = validation_error_messages.and_then(|messages| {
+        let alert = formatdoc!(
+            "
+            <div id='alert'
+                hx-swap-oob='true'
+                class='alert alert-danger'
+                role='alert'>
+                <ul class='mb-0'>
+                    {}
+                </ul
+            </div>
+            ",
+            messages
+                .iter()
+                .map(|x| format!("<li>{x}</li>"))
+                .collect::<Vec<_>>()
+                .join("")
+        );
+        Some(alert)
+    });
+    alert
 }
 
 pub async fn hx_get_goal(
@@ -212,6 +226,75 @@ pub async fn hx_delete_goal(
         ));
     }
 
+    // don't need to push url, closing modal via trigger handles url history
+    let trigger = HxResponseTrigger::normal([
+        HxEvent::new("trigger_close"),
+        HxEvent::new("trigger_table_reload"),
+    ]);
+
+    Ok((trigger, "").into_response())
+}
+
+pub async fn hx_get_edit_goal(
+    Path(id): Path<i32>,
+    jar: PrivateCookieJar,
+    State(state): State<AppState>,
+    State(tera): State<tera::Tera>,
+    HxRequest(hx_request): HxRequest,
+) -> Result<Response, WebappError> {
+    let username = match jar.get("user") {
+        Some(user) => user.value().to_string(),
+        None => return Err(WebappError::NotLoggedInError),
+    };
+    let mut conn = state.pool.clone().get()?;
+    let user = users::table
+        .filter(users::username.eq(&username))
+        .first::<User>(&mut conn)?;
+
+    let goal = goals::table
+        .filter(goals::id.eq(id).and(goals::user_id.eq(user.id)))
+        .first::<Goal>(&mut conn)?;
+
+    let mut context = tera::Context::new();
+    context.insert("goal", &goal);
+    context.insert("edit", &true);
+    let rendered = tera.render("fragments/goal-form.html", &context)?;
+
+    return Ok(Html(rendered).into_response());
+}
+
+pub async fn hx_patch_goal(
+    Path(id): Path<i32>,
+    jar: PrivateCookieJar,
+    State(state): State<AppState>,
+    State(tera): State<tera::Tera>,
+    Form(goal_form): Form<GoalForm>,
+) -> Result<Response, WebappError> {
+    let username = match jar.get("user") {
+        Some(user) => user.value().to_string(),
+        None => return Err(WebappError::NotLoggedInError),
+    };
+    let mut conn = state.pool.clone().get()?;
+    let user = users::table
+        .filter(users::username.eq(&username))
+        .first::<User>(&mut conn)?;
+    let goal = goals::table
+        .filter(goals::user_id.eq(user.id).and(goals::id.eq(id)))
+        .first::<Goal>(&mut conn)?;
+    debug!("goal: {:#?}", goal);
+
+    let mut context = GoalContext {
+        conn: &mut conn,
+        current_title: Some(&goal.title),
+    };
+    let alert = validate_goal_form_extract_alert(&goal_form, &mut context);
+
+    if let Some(alert) = alert {
+        return Ok(Html(alert).into_response());
+    }
+
+    let _ = diesel::update(&goal).set(&goal_form).execute(&mut conn)?;
+    //
     // don't need to push url, closing modal via trigger handles url history
     let trigger = HxResponseTrigger::normal([
         HxEvent::new("trigger_close"),

@@ -4,7 +4,7 @@ use axum::{
     http::StatusCode,
     middleware,
     response::IntoResponse,
-    routing::{delete, get, post},
+    routing::{delete, get, patch, post},
 };
 use axum_extra::extract::cookie::Key;
 use axum_htmx::{AutoVaryLayer, HxRequestGuardLayer};
@@ -131,7 +131,9 @@ pub async fn run_server() {
         .route("/goals/new", get(handlers::goal::hx_get_new_goal))
         .route("/goals/new", post(handlers::goal::hx_post_new_goal))
         .route("/goals/{id}", get(handlers::goal::hx_get_goal))
+        .route("/goals/{id}", patch(handlers::goal::hx_patch_goal))
         .route("/goals/{id}", delete(handlers::goal::hx_delete_goal))
+        .route("/goals/{id}/edit", get(handlers::goal::hx_get_edit_goal))
         .route_layer(HxRequestGuardLayer::default())
         // auth routes
         .route("/goals", get(handlers::goal::get_goals))

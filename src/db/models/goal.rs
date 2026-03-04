@@ -38,8 +38,9 @@ pub struct NewGoal {
     pub user_id: i32,
 }
 
-#[derive(Debug, Deserialize, Validate)]
-#[validate(context = "PgConnection", mutable)]
+#[derive(Debug, Deserialize, Validate, AsChangeset)]
+#[diesel(table_name = crate::db::schema::goals)]
+#[validate(context = "GoalContext<'v_a>", mutable)]
 pub struct GoalForm {
     #[validate(custom(function = "validate_goal_title", use_context))]
     pub title: String,
@@ -47,11 +48,16 @@ pub struct GoalForm {
     pub notes: Option<String>,
 }
 
-fn validate_goal_title(title: &str, conn: &mut PgConnection) -> Result<(), ValidationError> {
+pub struct GoalContext<'a> {
+    pub conn: &'a mut PgConnection,
+    pub current_title: Option<&'a str>,
+}
+
+fn validate_goal_title(title: &str, context: &mut GoalContext) -> Result<(), ValidationError> {
     let res = goals::table
         .filter(goals::title.eq(title))
         .select(goals::id)
-        .execute(conn);
+        .execute(context.conn);
 
     if let Ok(rows) = res {
         if rows > 0 {
