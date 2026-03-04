@@ -63,7 +63,13 @@
     </button>
     <button type="button"
       class="btn btn-secondary"
-      onClick="closeGoalModal();">
+      {% if edit %}
+        hx-get="/goals/{{ goal['id'] }}"
+        hx-target="#goals-modal-content"
+      {% else %}
+        onClick="closeGoalModal();"
+      {% endif %}
+      >
       Cancel
     </button>
   </div>
