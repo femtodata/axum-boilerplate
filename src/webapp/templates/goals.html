@@ -34,7 +34,7 @@
     </div>
   </div>
   <script>
-  const goalModal = new bootstrap.Modal('#goals-modal');
+  var goalModal = new bootstrap.Modal('#goals-modal');
   function closeGoalModal() {
     goalModal.hide();
     history.pushState({}, "", "/goals");
