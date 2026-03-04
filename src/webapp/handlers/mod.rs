@@ -28,8 +28,6 @@ pub async fn get_login(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
 ) -> Result<(PrivateCookieJar, Response), WebappError> {
-    debug!("{params:#?}");
-
     // you only get here if you manually go to url, so we don't worry about query params / next
     if let Some(_user) = jar.get("user") {
         return Ok((jar, Redirect::to("/").into_response()));
@@ -53,8 +51,6 @@ pub async fn post_login(
     headers: HeaderMap,
     Form(login_payload): Form<LoginPayload>,
 ) -> Result<(PrivateCookieJar, Response), WebappError> {
-    debug!("{login_payload:#?}");
-
     let validation = login_payload.validate();
 
     // if validation errors, render login with messages in alert
