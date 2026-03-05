@@ -139,7 +139,7 @@ pub async fn run_server() {
         .route("/goals", get(handlers::goal::get_goals))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
-            handlers::auth_middleware,
+            handlers::middleware::auth_middleware,
         ))
         .route("/", get(handlers::get_index))
         .route("/login", get(handlers::get_login))
@@ -154,7 +154,7 @@ pub async fn run_server() {
                 .layer(TraceLayer::new_for_http())
                 .layer(middleware::from_fn_with_state(
                     app_state.clone(),
-                    handlers::error_middleware,
+                    handlers::middleware::error_middleware,
                 ))
                 .layer(AutoVaryLayer),
         )
