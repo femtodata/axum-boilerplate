@@ -158,8 +158,17 @@ pub async fn get_test_error_page() -> Result<Response, WebappError> {
     Err(WebappError::TestError)
 }
 
-pub async fn get_calendar(State(tera): State<tera::Tera>) -> Result<Response, WebappError> {
+pub async fn get_calendar(
+    jar: PrivateCookieJar,
+    State(tera): State<tera::Tera>,
+) -> Result<Response, WebappError> {
     let mut context = tera::Context::new();
+
+    if let Some(user) = jar.get("user") {
+        debug!("logged in user: {:#?}", user);
+        context.insert("user", &user.to_string())
+    }
+    context.insert("fixedHeight", &true);
 
     let rendered = tera.render("calendar.html", &context)?;
 
