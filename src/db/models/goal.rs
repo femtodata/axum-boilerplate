@@ -54,17 +54,16 @@ pub struct GoalContext<'a> {
 }
 
 fn validate_goal_title(title: &str, context: &mut GoalContext) -> Result<(), ValidationError> {
-    let query = goals::table
+    let mut query = goals::table
         .select(goals::id)
-        .filter(goals::title.eq(title));
+        .filter(goals::title.eq(title))
+        .into_boxed();
 
-    let res = match context.current_title {
-        Some(current_title) => {
-            let query = query.filter(goals::title.ne(current_title));
-            query.execute(context.conn)
-        }
-        None => query.execute(context.conn),
+    if let Some(current_title) = context.current_title {
+        query = query.filter(goals::title.ne(current_title));
     };
+
+    let res = query.execute(context.conn);
 
     if let Ok(rows) = res {
         if rows > 0 {
