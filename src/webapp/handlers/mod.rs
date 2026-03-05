@@ -158,6 +158,14 @@ pub async fn get_test_error_page() -> Result<Response, WebappError> {
     Err(WebappError::TestError)
 }
 
+pub async fn get_calendar(State(tera): State<tera::Tera>) -> Result<Response, WebappError> {
+    let mut context = tera::Context::new();
+
+    let rendered = tera.render("calendar.html", &context)?;
+
+    Ok(Html(rendered).into_response())
+}
+
 // to be used as middleware
 pub async fn auth_middleware(
     jar: PrivateCookieJar,

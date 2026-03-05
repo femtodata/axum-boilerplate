@@ -147,6 +147,7 @@ pub async fn run_server() {
         .route("/logout", get(handlers::get_logout))
         .route("/error", get(handlers::get_error_page))
         .route("/test_error", get(handlers::get_test_error_page))
+        .route("/calendar", get(handlers::get_calendar))
         .merge(sso::sso_router())
         .layer(
             ServiceBuilder::new()

@@ -13,10 +13,14 @@
     <title>{% block title %}axum-boilerplate{% endblock %}</title>
   </head>
   <body>
-    {% include "fragments/navbar.html" %}
-    <div class="container">
-      <div id="content">
-      {% block content %}{% endblock content %}
+    <div class="container-fluid p-0">
+      <div class="vh-100 border border-danger">
+        {% include "fragments/navbar.html" %}
+        <div class="container v-100 border border-danger">
+          <div id="content">
+            {% block content %}{% endblock content %}
+          </div>
+        </div>
       </div>
     </div>
   </body>
