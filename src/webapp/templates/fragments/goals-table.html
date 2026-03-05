@@ -2,7 +2,8 @@
     {% for goal in goals %}
       <tr>
         <td>
-          <a hx-get="/goals/{{ goal['id']}}"
+          <a href="#"
+            hx-get="/goals/{{ goal['id']}}"
             hx-target="#goals-modal-content"
             data-bs-toggle="modal"
             data-bs-target="#goals-modal">
