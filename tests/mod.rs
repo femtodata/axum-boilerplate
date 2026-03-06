@@ -1,6 +1,6 @@
 use axum_boilerplate::db::models::{
     EmailAddress, Goal, NewGoal, NewUser, User,
-    goal::{GoalForm, create_new_goal},
+    goal::{GoalContext, GoalForm, create_new_goal},
     user::{create_new_user, hash_password, verify_password},
 };
 use database::run_migrations;
@@ -103,8 +103,14 @@ fn test_user_goal(conn: &mut diesel::PgConnection, user: &User, goal: &Goal) {
 
 fn test_goal_form(conn: &mut PgConnection, user: &User) {
     println!("testing goal form");
+
+    let mut context = GoalContext {
+        conn,
+        current_title: None,
+    };
+
     let goal_form = get_goal_02_form();
-    let validation_result = goal_form.validate_with_args(conn);
+    let validation_result = goal_form.validate_with_args(&mut context);
     assert!(validation_result.is_ok());
     let new_goal = NewGoal {
         title: goal_form.title,
