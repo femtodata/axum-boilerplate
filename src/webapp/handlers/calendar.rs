@@ -34,7 +34,7 @@ pub async fn get_calendar(
 pub async fn hx_get_calendar_content(
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
-    user_datetime: Query<UserDateTime>,
+    Query(user_datetime): Query<UserDateTime>,
     // Json(payload): Json<UserDate>,
 ) -> Result<Response, WebappError> {
     println!("{:#?}", user_datetime);
