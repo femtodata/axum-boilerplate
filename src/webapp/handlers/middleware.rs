@@ -41,6 +41,8 @@ pub async fn error_middleware(
     let status_code = response.status();
 
     if status_code.is_server_error() || status_code.is_client_error() {
+        tracing::error!("{:#?}", response);
+
         if hx_request {
             return Ok((status_code, HxRedirect("/error".to_string()), "").into_response());
         }

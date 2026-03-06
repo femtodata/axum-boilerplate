@@ -96,6 +96,7 @@ pub enum WebappError {
 impl IntoResponse for WebappError {
     fn into_response(self) -> axum::response::Response {
         tracing::error!("WebappError: {:#?}", self);
+        info!("WebappError: {:#?}", self);
         println!("WebappError: {:#?}", self);
         (StatusCode::INTERNAL_SERVER_ERROR, format!("{:#?}", self)).into_response()
     }
@@ -148,6 +149,11 @@ pub async fn run_server() {
         .route("/error", get(handlers::get_error_page))
         .route("/test_error", get(handlers::get_test_error_page))
         .route("/calendar", get(handlers::calendar::get_calendar))
+        .merge(
+            Router::new()
+                .route("/calendar/dates", get(handlers::calendar::hx_get_dates))
+                .route_layer(HxRequestGuardLayer::default()),
+        )
         .merge(sso::sso_router())
         .layer(
             ServiceBuilder::new()

@@ -9,7 +9,7 @@ axum = { version = "0.8.4", features = ["macros"] }
 axum-extra = { version = "0.10.1", features = ["cookie-private"] }
 axum-htmx = { version = "0.8.1", features = ["auto-vary", "guards", "serde"] }
 bcrypt = "0.17.1"
-chrono = "0.4.41"
+chrono = { version = "0.4.41", features = ["serde"] }
 clap = { version = "4.5.47", features = ["derive", "string", "cargo"] }
 diesel = { version = "2.3.1", features = ["chrono", "postgres", "r2d2", "serde_json"] }
 diesel_migrations = { version = "2.3.1", features = ["postgres"] }

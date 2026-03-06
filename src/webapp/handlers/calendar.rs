@@ -1,4 +1,9 @@
+use std::collections::HashMap;
+
+use axum::extract::{Json, Query};
 use axum::response::{Html, IntoResponse};
+use chrono::{DateTime, NaiveDate, Utc};
+use serde::{Deserialize, Serialize};
 use tracing::debug;
 
 use super::super::WebappError;
@@ -24,4 +29,30 @@ pub async fn get_calendar(
     let rendered = tera.render("calendar.html", &context)?;
 
     Ok(Html(rendered).into_response())
+}
+
+pub async fn hx_get_dates(
+    jar: PrivateCookieJar,
+    State(tera): State<tera::Tera>,
+    user_date: Query<UserDate>,
+    // Json(payload): Json<UserDate>,
+) -> Result<Response, WebappError> {
+    println!("{:#?}", user_date);
+    // println!("{:#?}", payload);
+
+    Ok(Html("").into_response())
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserDate {
+    today: DateTime<Utc>,
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_dates() {
+        println!("testing dates");
+    }
 }
