@@ -151,7 +151,10 @@ pub async fn run_server() {
         .route("/calendar", get(handlers::calendar::get_calendar))
         .merge(
             Router::new()
-                .route("/calendar/dates", get(handlers::calendar::hx_get_dates))
+                .route(
+                    "/calendar/content",
+                    get(handlers::calendar::hx_get_calendar_content),
+                )
                 .route_layer(HxRequestGuardLayer::default()),
         )
         .merge(sso::sso_router())

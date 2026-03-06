@@ -31,20 +31,24 @@ pub async fn get_calendar(
     Ok(Html(rendered).into_response())
 }
 
-pub async fn hx_get_dates(
+pub async fn hx_get_calendar_content(
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
-    user_date: Query<UserDate>,
+    user_datetime: Query<UserDateTime>,
     // Json(payload): Json<UserDate>,
 ) -> Result<Response, WebappError> {
-    println!("{:#?}", user_date);
+    println!("{:#?}", user_datetime);
     // println!("{:#?}", payload);
 
-    Ok(Html("").into_response())
+    let mut context = tera::Context::new();
+
+    let rendered = tera.render("fragments/calendar-content.html", &context)?;
+
+    Ok(Html(rendered).into_response())
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UserDate {
+pub struct UserDateTime {
     today: DateTime<Utc>,
 }
 

@@ -7,28 +7,10 @@
   {% endif %}
 {% endblock title %}
 {% block content %}
-  <div class="d-flex flex-column h-100">
-
-    <a hx-get="/calendar/dates"
-      hx-vals="js:{today: (new Date()).toJSON()}"
-      hx-swap="none"
-    >
-      Date
-    </a>
- 
-  {% for i in [0, 1, 2, 3, 4] %}
-    <div class="flex-grow-1 d-flex flex-row">
-      {% for j in [0, 1, 2, 3, 4, 5, 6] %}
-        <div class="flex-grow-1 border">
-          <div class="d-flex flex-row justify-content-center">
-            <div>
-              {{ i }}, {{ j }}
-            </div>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  {% endfor %}
+  <div hx-get="/calendar/content"
+    hx-vals="js:{today: (new Date()).toJSON()}"
+    hx-target="#content"
+    hx-trigger="load">
+    loading...
   </div>
-
 {% endblock content %}
