@@ -10,10 +10,7 @@
   <div class="d-flex flex-column h-100">
 
     <a hx-get="/calendar/dates"
-      {# 
       hx-vals="js:{today: (new Date()).toJSON()}"
-      #}
-      hx-vals="js:{today: 'abc'}"
       hx-swap="none"
     >
       Date
