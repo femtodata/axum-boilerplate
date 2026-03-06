@@ -54,9 +54,15 @@ pub struct UserDateTime {
 
 #[cfg(test)]
 mod tests {
+    use chrono::{Datelike, Days, Local, TimeDelta};
 
     #[test]
     fn test_dates() {
         println!("testing dates");
+        let today = Local::now().date_naive();
+        println!("today: {}", today);
+        println!("weekday: {}", today.weekday());
+        let prefix_days = today.weekday().number_from_sunday();
+        let start_date = today.checked_sub_days(Days::new(prefix_days.into()));
     }
 }
