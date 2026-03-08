@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use axum::extract::{Json, Query};
 use axum::response::{Html, IntoResponse};
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, Days, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
@@ -52,17 +52,49 @@ pub struct UserDateTime {
     today: DateTime<Utc>,
 }
 
+fn calendar_month_start_end_dates(date: &NaiveDate) -> Result<(NaiveDate, NaiveDate), DateError> {
+    let month_first = date
+        .with_day(1)
+        .ok_or_else(|| DateError::UnreachableError)?;
+
+    let prefix_days = month_first.weekday().number_from_sunday() - 1;
+
+    let start_date = month_first
+        .checked_sub_days(Days::new(prefix_days.into()))
+        .ok_or_else(|| DateError::UnreachableError)?;
+
+    let month_last = date
+        .with_day(date.num_days_in_month().into())
+        .ok_or_else(|| DateError::UnreachableError)?;
+
+    let suffix_days = 7 - month_last.weekday().number_from_sunday();
+
+    let end_date = month_last
+        .checked_add_days(Days::new(suffix_days.into()))
+        .ok_or_else(|| DateError::UnreachableError)?;
+
+    Ok((start_date, end_date))
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum DateError {
+    #[error("This error should be unreachable")]
+    UnreachableError,
+}
+
 #[cfg(test)]
 mod tests {
-    use chrono::{Datelike, Days, Local, TimeDelta};
+    use super::*;
 
     #[test]
     fn test_dates() {
-        println!("testing dates");
-        let today = Local::now().date_naive();
-        println!("today: {}", today);
-        println!("weekday: {}", today.weekday());
-        let prefix_days = today.weekday().number_from_sunday();
-        let start_date = today.checked_sub_days(Days::new(prefix_days.into()));
+        let date = NaiveDate::from_ymd_opt(2026, 3, 15).unwrap();
+        assert_eq!(
+            calendar_month_start_end_dates(&date).unwrap(),
+            (
+                NaiveDate::from_ymd_opt(2026, 3, 1).unwrap(),
+                NaiveDate::from_ymd_opt(2026, 4, 4).unwrap()
+            )
+        );
     }
 }
