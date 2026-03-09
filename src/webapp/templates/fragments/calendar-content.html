@@ -1,15 +1,19 @@
-  <div class="d-flex flex-column h-100">
-  {% for week in weeks %}
-    <div class="flex-grow-1 d-flex flex-row">
-      {% for day in week %}
-        <div class="flex-grow-1 border">
-          <div class="d-flex flex-row justify-content-center">
+  <div class="h-100 pt-3">
+    <div class="h-100 border"
+    style="
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: 1fr;
+    ">
+      {% for week in weeks %}
+        {% for day in week %}
+          <div class="border"
+            style="position: relative;">
             <div>
               {{ day.display_str }}
             </div>
           </div>
-        </div>
+        {% endfor %}
       {% endfor %}
     </div>
-  {% endfor %}
   </div>
