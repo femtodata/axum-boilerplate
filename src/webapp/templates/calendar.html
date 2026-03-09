@@ -8,7 +8,7 @@
 {% endblock title %}
 {% block content %}
   <div hx-get="/calendar/content"
-    hx-vals="js:{today: (new Date()).toJSON()}"
+    hx-vals="js:{user_utc: (new Date()).toJSON()}"
     hx-target="#content"
     hx-trigger="load">
   </div>
