@@ -8,6 +8,7 @@ use axum::{
 };
 use axum_extra::extract::cookie::Key;
 use axum_htmx::{AutoVaryLayer, HxRequestGuardLayer};
+use handlers::calendar::DateError;
 use rand::distr::{Alphanumeric, SampleString};
 use state::{AppState, InnerState};
 use std::{env, sync::Arc};
@@ -82,6 +83,9 @@ pub enum WebappError {
 
     #[error("HxRequest expected but not found")]
     HxRequestExpectedError,
+
+    #[error(transparent)]
+    UnreachableDateError(#[from] DateError),
 
     #[error("Test error")]
     TestError,

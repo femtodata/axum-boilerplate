@@ -38,7 +38,6 @@ pub async fn hx_get_calendar_content(
     // Json(payload): Json<UserDate>,
 ) -> Result<Response, WebappError> {
     println!("{:#?}", user_datetime);
-    // println!("{:#?}", payload);
 
     let mut context = tera::Context::new();
 
@@ -49,7 +48,7 @@ pub async fn hx_get_calendar_content(
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserDateTime {
-    today: DateTime<Utc>,
+    user_utc: DateTime<Utc>,
 }
 
 fn calendar_month_start_end_dates(date: &NaiveDate) -> Result<(NaiveDate, NaiveDate), DateError> {
@@ -82,6 +81,19 @@ pub enum DateError {
     UnreachableError,
 }
 
+struct CalendarDay {
+    date: NaiveDate,
+}
+
+impl CalendarDay {
+    fn display(&self) -> String {
+        match self.date.day() {
+            1 => self.date.format("%b %-d").to_string(),
+            _ => self.date.format("%-d").to_string(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -96,5 +108,37 @@ mod tests {
                 NaiveDate::from_ymd_opt(2026, 4, 4).unwrap()
             )
         );
+    }
+
+    #[test]
+    fn test_calendar_content() {
+        let today = NaiveDate::from_ymd_opt(2026, 3, 15).unwrap();
+
+        let (start_date, end_date) = calendar_month_start_end_dates(&today).unwrap();
+        let mut last_pushed = start_date;
+
+        let mut date_iter = start_date.iter_days();
+
+        let mut weeks_vec = Vec::new();
+
+        while last_pushed != end_date {
+            let mut days_vec = Vec::new();
+            for _ in 0..7 {
+                days_vec.push(CalendarDay {
+                    date: date_iter.next().unwrap(),
+                });
+            }
+            last_pushed = days_vec.last().unwrap().date;
+            weeks_vec.push(days_vec);
+        }
+
+        for week in weeks_vec.iter() {
+            let day_strings = week
+                .iter()
+                .map(|day| day.display())
+                .collect::<Vec<String>>();
+            print!("{}", day_strings.join(" | "));
+            print!("\n");
+        }
     }
 }
