@@ -37,9 +37,37 @@ pub async fn hx_get_calendar_content(
     Query(user_datetime): Query<UserDateTime>,
     // Json(payload): Json<UserDate>,
 ) -> Result<Response, WebappError> {
-    println!("{:#?}", user_datetime);
+    debug!("{:#?}", user_datetime);
+
+    let today = user_datetime.user_utc.date_naive();
+
+    let (start_date, end_date) = calendar_month_start_end_dates(&today)?;
+
+    let mut last_pushed = start_date;
+
+    let mut date_iter = start_date.iter_days();
+
+    let mut weeks_vec = Vec::new();
+
+    // not at all sure this is the best way to check
+    while last_pushed != end_date {
+        let mut days_vec = Vec::new();
+        for _ in 0..7 {
+            days_vec.push(CalendarDay::new(
+                date_iter
+                    .next()
+                    .ok_or_else(|| DateError::UnreachableError)?,
+            ));
+        }
+        last_pushed = days_vec
+            .last()
+            .ok_or_else(|| DateError::UnreachableError)?
+            .date;
+        weeks_vec.push(days_vec);
+    }
 
     let mut context = tera::Context::new();
+    context.insert("weeks", &weeks_vec);
 
     let rendered = tera.render("fragments/calendar-content.html", &context)?;
 
@@ -77,19 +105,24 @@ fn calendar_month_start_end_dates(date: &NaiveDate) -> Result<(NaiveDate, NaiveD
 
 #[derive(Debug, thiserror::Error)]
 pub enum DateError {
-    #[error("This error should be unreachable")]
+    #[error("This date error should be unreachable")]
     UnreachableError,
 }
 
+#[derive(Serialize)]
 struct CalendarDay {
     date: NaiveDate,
+    display_str: String,
 }
 
 impl CalendarDay {
-    fn display(&self) -> String {
-        match self.date.day() {
-            1 => self.date.format("%b %-d").to_string(),
-            _ => self.date.format("%-d").to_string(),
+    fn new(date: NaiveDate) -> Self {
+        Self {
+            date,
+            display_str: match date.day() {
+                1 => date.format("%b %-d").to_string(),
+                _ => date.format("%-d").to_string(),
+            },
         }
     }
 }
@@ -124,9 +157,7 @@ mod tests {
         while last_pushed != end_date {
             let mut days_vec = Vec::new();
             for _ in 0..7 {
-                days_vec.push(CalendarDay {
-                    date: date_iter.next().unwrap(),
-                });
+                days_vec.push(CalendarDay::new(date_iter.next().unwrap()));
             }
             last_pushed = days_vec.last().unwrap().date;
             weeks_vec.push(days_vec);
@@ -135,7 +166,7 @@ mod tests {
         for week in weeks_vec.iter() {
             let day_strings = week
                 .iter()
-                .map(|day| day.display())
+                .map(|day| day.display_str.clone())
                 .collect::<Vec<String>>();
             print!("{}", day_strings.join(" | "));
             print!("\n");

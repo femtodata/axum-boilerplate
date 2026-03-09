@@ -1,11 +1,11 @@
   <div class="d-flex flex-column h-100">
-  {% for i in [0, 1, 2, 3, 4] %}
+  {% for week in weeks %}
     <div class="flex-grow-1 d-flex flex-row">
-      {% for j in [0, 1, 2, 3, 4, 5, 6] %}
+      {% for day in week %}
         <div class="flex-grow-1 border">
           <div class="d-flex flex-row justify-content-center">
             <div>
-              {{ i }}, {{ j }}
+              {{ day.display_str }}
             </div>
           </div>
         </div>
