@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use axum::extract::{Json, Query};
+use axum::extract::Query;
 use axum::response::{Html, IntoResponse};
 use chrono::{DateTime, Datelike, Days, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
@@ -54,15 +52,10 @@ pub async fn hx_get_calendar_content(
         let mut days_vec = Vec::new();
         for _ in 0..7 {
             days_vec.push(CalendarDay::new(
-                date_iter
-                    .next()
-                    .ok_or_else(|| DateError::UnreachableError)?,
+                date_iter.next().ok_or(DateError::UnreachableError)?,
             ));
         }
-        last_pushed = days_vec
-            .last()
-            .ok_or_else(|| DateError::UnreachableError)?
-            .date;
+        last_pushed = days_vec.last().ok_or(DateError::UnreachableError)?.date;
         weeks_vec.push(days_vec);
     }
 
@@ -80,25 +73,23 @@ pub struct UserDateTime {
 }
 
 fn calendar_month_start_end_dates(date: &NaiveDate) -> Result<(NaiveDate, NaiveDate), DateError> {
-    let month_first = date
-        .with_day(1)
-        .ok_or_else(|| DateError::UnreachableError)?;
+    let month_first = date.with_day(1).ok_or(DateError::UnreachableError)?;
 
     let prefix_days = month_first.weekday().number_from_sunday() - 1;
 
     let start_date = month_first
         .checked_sub_days(Days::new(prefix_days.into()))
-        .ok_or_else(|| DateError::UnreachableError)?;
+        .ok_or(DateError::UnreachableError)?;
 
     let month_last = date
         .with_day(date.num_days_in_month().into())
-        .ok_or_else(|| DateError::UnreachableError)?;
+        .ok_or(DateError::UnreachableError)?;
 
     let suffix_days = 7 - month_last.weekday().number_from_sunday();
 
     let end_date = month_last
         .checked_add_days(Days::new(suffix_days.into()))
-        .ok_or_else(|| DateError::UnreachableError)?;
+        .ok_or(DateError::UnreachableError)?;
 
     Ok((start_date, end_date))
 }
@@ -169,7 +160,7 @@ mod tests {
                 .map(|day| day.display_str.clone())
                 .collect::<Vec<String>>();
             print!("{}", day_strings.join(" | "));
-            print!("\n");
+            println!();
         }
     }
 }
