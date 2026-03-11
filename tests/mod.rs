@@ -7,7 +7,7 @@ use database::run_migrations;
 use diesel::prelude::*;
 use dotenvy::dotenv;
 use std::env;
-use validator::{Validate, ValidateArgs};
+use validator::ValidateArgs;
 
 mod database;
 
@@ -66,8 +66,7 @@ fn test_user(conn: &mut diesel::PgConnection) -> User {
     assert_eq!(user.username, new_user.username);
     assert_eq!(user.email, new_user.email);
     assert_eq!(user.hashed_password, new_user.hashed_password);
-    assert_eq!(
-        true,
+    assert!(
         verify_password(
             "blahblahblah",
             new_user.hashed_password.as_ref().unwrap().as_str()
@@ -98,7 +97,7 @@ fn test_user_goal(conn: &mut diesel::PgConnection, user: &User, goal: &Goal) {
         .load(conn)
         .unwrap();
 
-    assert_eq!(true, goals.contains(goal));
+    assert!(goals.contains(goal));
 }
 
 fn test_goal_form(conn: &mut PgConnection, user: &User) {

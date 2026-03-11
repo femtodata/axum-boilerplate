@@ -24,7 +24,7 @@ impl Database {
 
     pub fn conn(&self) -> PgConnection {
         PgConnection::establish(&self.url)
-            .expect(&format!("failed to establish connection to {}", &self.url))
+            .unwrap_or_else(|_| panic!("failed to establish connection to {}", &self.url))
     }
 
     fn split_url(&self) -> (String, String) {
