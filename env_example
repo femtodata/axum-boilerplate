@@ -1,3 +1,4 @@
+SECRET=
 DATABASE_URL=postgres://femto:femto@localhost:5432/axum_boilerplate
 DATABASE_TEST_URL=postgres://femto:femto@localhost:5432/axum_boilerplate_test
 MICROSOFT_CLIENT_ID=
