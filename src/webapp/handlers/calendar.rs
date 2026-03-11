@@ -59,8 +59,11 @@ pub async fn hx_get_calendar_content(
         weeks_vec.push(days_vec);
     }
 
+    let days_of_week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
     let mut context = tera::Context::new();
     context.insert("weeks", &weeks_vec);
+    context.insert("days_of_week", &days_of_week);
 
     let rendered = tera.render("fragments/calendar-content.html", &context)?;
 
