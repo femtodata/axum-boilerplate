@@ -1,25 +1,37 @@
   <div class="h-100 pt-3">
-    <div class="h-100 border"
+    <div class="h-100"
     style="
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: auto repeat({{ weeks | length }}, .3fr);
+      grid-template-rows: auto repeat({{ weeks | length }}, 1fr);
       min-width: 0;
       min-height: 0;
     ">
       {% for day_of_week in days_of_week %}
-        <div style="
-          font-weight: bold;
-          font-size: 0.75em;
-          text-align: center;
-        ">
+        <div 
+          class="border-start border-top
+            {% if loop.last %}
+              border-end
+            {% endif %}
+          "
+          style="
+            font-weight: bold;
+            font-size: 0.75em;
+            text-align: center;
+          "
+        >
           {{ day_of_week }}
         </div>
       {% endfor %}
 
       {% for week in weeks %}
         {% for day in week %}
-          <div class="border"
+          <div 
+            class="border-start border-bottom
+              {% if loop.last %}
+                border-end
+              {% endif %}
+            "
             style="
               position: relative;
               overflow: hidden;
