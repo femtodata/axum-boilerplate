@@ -22,3 +22,6 @@ pub use crate::db::models::goal::Goal;
 pub use crate::db::models::goal::NewGoal;
 
 pub mod applied_goal;
+pub use applied_goal::AppliedGoal;
+pub use applied_goal::AppliedGoalForm;
+pub use applied_goal::NewAppliedGoal;

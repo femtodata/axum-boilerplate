@@ -1,8 +1,9 @@
 use axum_boilerplate::db::models::{
-    EmailAddress, Goal, NewGoal, NewUser, User,
+    AppliedGoal, EmailAddress, Goal, NewAppliedGoal, NewGoal, NewUser, User,
     goal::{GoalContext, GoalForm, create_new_goal},
     user::{create_new_user, hash_password, verify_password},
 };
+use chrono::NaiveDate;
 use database::run_migrations;
 use diesel::prelude::*;
 use dotenvy::dotenv;
@@ -38,6 +39,14 @@ fn get_goal_02_form() -> GoalForm {
     }
 }
 
+fn get_applied_goal_01(goal_id: i32, date: NaiveDate) -> NewAppliedGoal {
+    NewAppliedGoal {
+        goal_id,
+        date,
+        points_possible: 3,
+    }
+}
+
 #[test]
 fn test_db_ops() {
     dotenv().unwrap();
@@ -54,7 +63,7 @@ fn test_db_ops() {
     let user = test_user(&mut conn);
     let goal = test_goal(&mut conn, &user);
     test_user_goal(&mut conn, &user, &goal);
-    test_goal_form(&mut conn, &user);
+    let new_goal = test_goal_form(&mut conn, &user);
 }
 
 fn test_user(conn: &mut diesel::PgConnection) -> User {
@@ -100,7 +109,7 @@ fn test_user_goal(conn: &mut diesel::PgConnection, user: &User, goal: &Goal) {
     assert!(goals.contains(goal));
 }
 
-fn test_goal_form(conn: &mut PgConnection, user: &User) {
+fn test_goal_form(conn: &mut PgConnection, user: &User) -> Goal {
     println!("testing goal form");
 
     let mut context = GoalContext {
@@ -123,4 +132,9 @@ fn test_goal_form(conn: &mut PgConnection, user: &User) {
     assert_eq!(goal.description, new_goal.description);
     assert_eq!(goal.notes, new_goal.notes);
     assert_eq!(goal.user_id, new_goal.user_id);
+    goal
+}
+
+fn test_applied_goal(conn: &mut diesel::PgConnection, goal: &Goal) -> AppliedGoal {
+    todo!()
 }
