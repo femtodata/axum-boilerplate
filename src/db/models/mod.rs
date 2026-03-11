@@ -20,4 +20,5 @@ pub use crate::db::models::user::User;
 pub mod goal;
 pub use crate::db::models::goal::Goal;
 pub use crate::db::models::goal::NewGoal;
-// Goal
+
+pub mod applied_goal;
