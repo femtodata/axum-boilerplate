@@ -93,32 +93,27 @@ pub struct NewUser {
 }
 
 pub fn hash_password(password: String) -> Result<String, WebappError> {
-    bcrypt::hash(password.trim(), bcrypt::DEFAULT_COST)
-        .map_err(|err| return WebappError::BcryptError(err))
+    bcrypt::hash(password.trim(), bcrypt::DEFAULT_COST).map_err(WebappError::BcryptError)
 }
 
 pub fn verify_password(password: &str, hashed_password: &str) -> Result<bool, WebappError> {
-    bcrypt::verify(password, hashed_password).map_err(|err| return WebappError::BcryptError(err))
+    bcrypt::verify(password, hashed_password).map_err(WebappError::BcryptError)
 }
 
 pub fn get_user_by_email(email: &str, conn: &mut PgConnection) -> Option<User> {
-    let user = users::table
+    users::table
         .filter(users::email.eq(email))
         .first(conn)
         .optional()
-        .unwrap();
-
-    user
+        .unwrap()
 }
 
 pub fn get_user_by_username(username: &str, conn: &mut PgConnection) -> Option<User> {
-    let user = schema::users::table
+    schema::users::table
         .filter(schema::users::username.eq(username))
         .first(conn)
         .optional()
-        .unwrap();
-
-    user
+        .unwrap()
 }
 
 pub fn create_new_user(
