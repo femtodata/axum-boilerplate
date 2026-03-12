@@ -32,4 +32,8 @@ diesel::table! {
 diesel::joinable!(applied_goals -> goals (goal_id));
 diesel::joinable!(goals -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(applied_goals, goals, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    applied_goals,
+    goals,
+    users,
+);

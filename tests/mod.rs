@@ -1,11 +1,15 @@
-use axum_boilerplate::db::models::{
-    AppliedGoal, EmailAddress, Goal, NewAppliedGoal, NewGoal, NewUser, User,
-    goal::{GoalContext, GoalForm, create_new_goal},
-    user::{create_new_user, hash_password, verify_password},
+use axum_boilerplate::db::{
+    models::{
+        AppliedGoal, EmailAddress, Goal, NewAppliedGoal, NewGoal, NewUser, User,
+        applied_goal::create_new_applied_goal,
+        goal::{GoalContext, GoalForm, create_new_goal},
+        user::{create_new_user, hash_password, verify_password},
+    },
+    schema::{applied_goals, goals},
 };
-use chrono::NaiveDate;
+use chrono::{Local, NaiveDate};
 use database::run_migrations;
-use diesel::prelude::*;
+use diesel::{debug_query, pg::Pg, prelude::*};
 use dotenvy::dotenv;
 use std::env;
 use validator::ValidateArgs;
@@ -64,6 +68,10 @@ fn test_db_ops() {
     let goal = test_goal(&mut conn, &user);
     test_user_goal(&mut conn, &user, &goal);
     let new_goal = test_goal_form(&mut conn, &user);
+
+    let applied_goal = test_applied_goal(&mut conn, &goal);
+
+    test_applied_goal_relation(&mut conn, &applied_goal, &goal, &user);
 }
 
 fn test_user(conn: &mut diesel::PgConnection) -> User {
@@ -136,5 +144,53 @@ fn test_goal_form(conn: &mut PgConnection, user: &User) -> Goal {
 }
 
 fn test_applied_goal(conn: &mut diesel::PgConnection, goal: &Goal) -> AppliedGoal {
-    todo!()
+    println!("testing applied_goal");
+
+    let today = Local::now().date_naive();
+
+    let new_applied_goal = get_applied_goal_01(goal.id, today);
+    let applied_goal = create_new_applied_goal(&new_applied_goal, conn)
+        .unwrap_or_else(|err| panic!("error create new applied_goal: {err}"));
+    assert_eq!(applied_goal.goal_id, goal.id);
+    assert_eq!(applied_goal.date, new_applied_goal.date);
+    assert_eq!(
+        applied_goal.points_possible,
+        new_applied_goal.points_possible
+    );
+    assert_eq!(applied_goal.points_scored, 0);
+    println!("{applied_goal:#?}");
+    applied_goal
+}
+
+fn test_applied_goal_relation(
+    conn: &mut PgConnection,
+    applied_goal: &AppliedGoal,
+    goal: &Goal,
+    user: &User,
+) {
+    println!("testing applied_goal, goal, user relation");
+    let subquery = goals::table
+        .filter(goals::user_id.eq(user.id))
+        .select(goals::id)
+        .into_boxed();
+
+    let query = applied_goals::table
+        .filter(applied_goals::goal_id.eq_any(subquery))
+        .select(AppliedGoal::as_select())
+        .into_boxed();
+
+    println!("subquery version: {}", debug_query::<Pg, _>(&query));
+
+    let applied_goals = query
+        .load(conn)
+        .unwrap_or_else(|err| panic!("Error loading applied_goals: {err:#?}"));
+
+    assert!(applied_goals.contains(applied_goal));
+
+    let goal_applied_goals = AppliedGoal::belonging_to(goal)
+        .select(AppliedGoal::as_select())
+        .load(conn)
+        .unwrap_or_else(|err| panic!("Error loading applied_goals: {err:#?}"));
+
+    assert!(goal_applied_goals.contains(applied_goal));
 }
