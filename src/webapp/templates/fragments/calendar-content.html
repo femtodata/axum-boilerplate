@@ -1,24 +1,18 @@
   <div class="h-100 pt-3">
-    <div class="h-100">
+    <div class="d-flex flex-column h-100">
 
-      <div
-        style="
-          height: 8%;
-        "
-      >
+      <div>
         <button 
           class="btn btn-primary"
           style="
-            height: 70%;
-            line-height: 0.75em;
-            font-size: 0.75em;
+            line-height: 1em;
+            font-size: 1em;
           "
         >Set Goals</button>
       </div>
-      <div
+      <div class="flex-grow-1 mt-3"
         style="
           margin-top: 0;
-          height: 92%;
           display: grid;
           grid-template-columns: repeat(7, 1fr);
           grid-template-rows: auto repeat({{ weeks | length }}, 1fr);
