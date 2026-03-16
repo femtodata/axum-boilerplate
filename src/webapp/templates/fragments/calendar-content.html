@@ -20,7 +20,7 @@
           }()}'
           hx-target='#content'
         >Today</button>
-        <i 
+        <a
           hx-get="/calendar/content"
           hx-vals='{
             "year": {{ prev_month_params["year"] }},
@@ -28,15 +28,16 @@
             "day": {{ prev_month_params["day"] }}
           }'
           hx-target='#content'
-          class="bi bi-chevron-left"
           style="
             margin-left: 1.5rem;
             font-size: 1.5rem;
             vertical-align: middle;
             cursor: pointer;
           "
-        ></i>
-        <i 
+        >
+          <i class="bi bi-chevron-left"></i>
+        </a>
+        <a
           hx-get="/calendar/content"
           hx-vals='{
             "year": {{ next_month_params["year"] }},
@@ -44,14 +45,15 @@
             "day": {{ next_month_params["day"] }}
           }'
           hx-target='#content'
-          class="bi bi-chevron-right"
           style="
             margin-left: 1rem;
             font-size: 1.5rem;
             vertical-align: middle;
             cursor: pointer;
           "
-        ></i>
+        >
+          <i class="bi bi-chevron-right"></i>
+        </a>
         <span 
           style="
             margin-left: 1.5rem;
