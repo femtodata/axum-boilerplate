@@ -1,6 +1,6 @@
 use axum::extract::{Path, Query};
 use axum::response::{Html, IntoResponse};
-use chrono::{DateTime, Datelike, Days, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, Days, Months, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
@@ -95,6 +95,30 @@ pub async fn hx_get_calendar_content(
 
     let month_str = date.format("%B %Y").to_string();
     context.insert("month_string", &month_str);
+
+    let next_month = date
+        .with_day(1)
+        .ok_or(DateError::UnreachableError)?
+        .checked_add_months(Months::new(1))
+        .ok_or(DateError::UnreachableError)?;
+    let next_month_params = CalendarParams {
+        year: next_month.year(),
+        month: next_month.month(),
+        day: next_month.day(),
+    };
+    let prev_month = date
+        .with_day(1)
+        .ok_or(DateError::UnreachableError)?
+        .checked_sub_months(Months::new(1))
+        .ok_or(DateError::UnreachableError)?;
+    let prev_month_params = CalendarParams {
+        year: prev_month.year(),
+        month: prev_month.month(),
+        day: prev_month.day(),
+    };
+
+    context.insert("next_month_params", &next_month_params);
+    context.insert("prev_month_params", &prev_month_params);
 
     let rendered = tera.render("fragments/calendar-content.html", &context)?;
 

@@ -9,18 +9,36 @@
             font-size: 1em;
           "
         >Today</button>
-        <i class="bi bi-chevron-left"
+        <i 
+          hx-get="/calendar/content"
+          hx-vals='{
+            "year": {{ prev_month_params["year"] }},
+            "month": {{ prev_month_params["month"] }},
+            "day": {{ prev_month_params["day"] }}
+          }'
+          hx-target='#content'
+          class="bi bi-chevron-left"
           style="
             margin-left: 1.5rem;
             font-size: 1.5rem;
             vertical-align: middle;
+            cursor: pointer;
           "
         ></i>
-        <i class="bi bi-chevron-right"
+        <i 
+          hx-get="/calendar/content"
+          hx-vals='{
+            "year": {{ next_month_params["year"] }},
+            "month": {{ next_month_params["month"] }},
+            "day": {{ next_month_params["day"] }}
+          }'
+          hx-target='#content'
+          class="bi bi-chevron-right"
           style="
             margin-left: 0.5rem;
             font-size: 1.5rem;
             vertical-align: middle;
+            cursor: pointer;
           "
         ></i>
         <span 
