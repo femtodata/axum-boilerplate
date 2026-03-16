@@ -139,8 +139,13 @@ pub async fn run_server() {
         .route("/goals/{id}", patch(handlers::goal::hx_patch_goal))
         .route("/goals/{id}", delete(handlers::goal::hx_delete_goal))
         .route("/goals/{id}/edit", get(handlers::goal::hx_get_edit_goal))
+        .route(
+            "/calendar/content",
+            get(handlers::calendar::hx_get_calendar_content),
+        )
         .route_layer(HxRequestGuardLayer::default())
         // auth routes
+        .route("/calendar", get(handlers::calendar::get_calendar))
         .route("/goals", get(handlers::goal::get_goals))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),
@@ -152,15 +157,6 @@ pub async fn run_server() {
         .route("/logout", get(handlers::get_logout))
         .route("/error", get(handlers::get_error_page))
         .route("/test_error", get(handlers::get_test_error_page))
-        .route("/calendar", get(handlers::calendar::get_calendar))
-        .merge(
-            Router::new()
-                .route(
-                    "/calendar/content",
-                    get(handlers::calendar::hx_get_calendar_content),
-                )
-                .route_layer(HxRequestGuardLayer::default()),
-        )
         .merge(sso::sso_router())
         .layer(
             ServiceBuilder::new()

@@ -37,9 +37,9 @@ pub async fn hx_get_calendar_content(
 ) -> Result<Response, WebappError> {
     debug!("{:#?}", user_datetime);
 
-    let today = user_datetime.user_utc.date_naive();
+    let date = user_datetime.user_utc.date_naive();
 
-    let (start_date, end_date) = calendar_month_start_end_dates(&today)?;
+    let (start_date, end_date) = calendar_month_start_end_dates(&date)?;
 
     let mut last_pushed = start_date;
 
@@ -65,7 +65,7 @@ pub async fn hx_get_calendar_content(
     context.insert("weeks", &weeks_vec);
     context.insert("days_of_week", &days_of_week);
 
-    let month_str = today.format("%B %Y").to_string();
+    let month_str = date.format("%B %Y").to_string();
     context.insert("month_string", &month_str);
 
     let rendered = tera.render("fragments/calendar-content.html", &context)?;

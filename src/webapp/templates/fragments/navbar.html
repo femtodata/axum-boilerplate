@@ -17,12 +17,12 @@
             active
             {% endif %}
           ">Goals</a>
+          <a href="/calendar" class="nav-item nav-link
+            {% if active and active == "calendar" %}
+            active
+            {% endif %}
+          ">Calendar</a>
         {% endif %}
-        <a href="/calendar" class="nav-item nav-link
-          {% if active and active == "calendar" %}
-          active
-          {% endif %}
-        ">Calendar</a>
       </div>
       {% if user %}
         <div class="navbar-nav ms-auto">
