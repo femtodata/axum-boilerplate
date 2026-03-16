@@ -8,6 +8,17 @@
             line-height: 1em;
             font-size: 1em;
           "
+          hx-get="/calendar/content"
+          hx-vals='js:{...function() {
+            var today = new Date();
+            var date_params = {
+              "year": today.getFullYear(),
+              "month": today.getMonth() + 1,
+              "day": today.getDate()
+            };
+            return date_params;
+          }()}'
+          hx-target='#content'
         >Today</button>
         <i 
           hx-get="/calendar/content"
@@ -35,7 +46,7 @@
           hx-target='#content'
           class="bi bi-chevron-right"
           style="
-            margin-left: 0.5rem;
+            margin-left: 1rem;
             font-size: 1.5rem;
             vertical-align: middle;
             cursor: pointer;
