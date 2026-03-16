@@ -149,6 +149,10 @@ pub async fn run_server() {
             "/calendar/month",
             get(handlers::calendar::get_calendar_month),
         )
+        .route(
+            "/calendar/month/{year}/{month}/{day}",
+            get(handlers::calendar::get_calendar_month_ymd),
+        )
         .route("/goals", get(handlers::goal::get_goals))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),

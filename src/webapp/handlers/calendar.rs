@@ -1,8 +1,10 @@
-use axum::extract::Query;
+use axum::extract::{Path, Query};
 use axum::response::{Html, IntoResponse};
 use chrono::{DateTime, Datelike, Days, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
+
+use crate::webapp::handlers::calendar;
 
 use super::super::WebappError;
 
@@ -23,6 +25,27 @@ pub async fn get_calendar_month(
         context.insert("user", &user.to_string())
     }
     context.insert("fixedHeight", &true);
+
+    let rendered = tera.render("calendar.html", &context)?;
+
+    Ok(Html(rendered).into_response())
+}
+
+pub async fn get_calendar_month_ymd(
+    Path(CalendarParams { year, month, day }): Path<CalendarParams>,
+    jar: PrivateCookieJar,
+    State(tera): State<tera::Tera>,
+) -> Result<Response, WebappError> {
+    let mut context = tera::Context::new();
+
+    if let Some(user) = jar.get("user") {
+        debug!("logged in user: {:#?}", user);
+        context.insert("user", &user.to_string())
+    }
+
+    let calendar_params = CalendarParams { year, month, day };
+    context.insert("fixedHeight", &true);
+    context.insert("calendar_params", &calendar_params);
 
     let rendered = tera.render("calendar.html", &context)?;
 

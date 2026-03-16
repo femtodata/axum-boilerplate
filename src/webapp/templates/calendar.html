@@ -8,15 +8,23 @@
 {% endblock title %}
 {% block content %}
   <div hx-get="/calendar/content"
-    hx-vals="js:{...function() {
-      var today = new Date();
-      var date_params = {
-        'year': today.getFullYear(),
-        'month': today.getMonth() + 1,
-        'day': today.getDate()
-      };
-      return date_params;
-    }()}"
+    {% if calendar_params %}
+      hx-vals='{
+        "year": {{ calendar_params["year"] }},
+        "month": {{ calendar_params["month"] }},
+        "day": {{ calendar_params["day"] }}
+      }'
+    {% else %}
+      hx-vals='js:{...function() {
+        var today = new Date();
+        var date_params = {
+          "year": today.getFullYear(),
+          "month": today.getMonth() + 1,
+          "day": today.getDate()
+        };
+        return date_params;
+      }()}'
+    {% endif %}
     hx-target="#content"
     hx-trigger="load">
   </div>
