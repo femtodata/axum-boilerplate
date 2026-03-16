@@ -145,7 +145,10 @@ pub async fn run_server() {
         )
         .route_layer(HxRequestGuardLayer::default())
         // auth routes
-        .route("/calendar", get(handlers::calendar::get_calendar))
+        .route(
+            "/calendar/month",
+            get(handlers::calendar::get_calendar_month),
+        )
         .route("/goals", get(handlers::goal::get_goals))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),

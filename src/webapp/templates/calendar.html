@@ -8,7 +8,15 @@
 {% endblock title %}
 {% block content %}
   <div hx-get="/calendar/content"
-    hx-vals="js:{user_utc: (new Date()).toJSON()}"
+    hx-vals="js:{...function() {
+      var today = new Date();
+      var date_params = {
+        'year': today.getFullYear(),
+        'month': today.getMonth() + 1,
+        'day': today.getDate()
+      };
+      return date_params;
+    }()}"
     hx-target="#content"
     hx-trigger="load">
   </div>

@@ -12,7 +12,7 @@ use axum::extract::State;
 
 use axum_extra::extract::PrivateCookieJar;
 
-pub async fn get_calendar(
+pub async fn get_calendar_month(
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
@@ -32,12 +32,17 @@ pub async fn get_calendar(
 pub async fn hx_get_calendar_content(
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
-    Query(user_datetime): Query<UserDateTime>,
+    Query(calendar_params): Query<CalendarParams>,
     // Json(payload): Json<UserDate>,
 ) -> Result<Response, WebappError> {
-    debug!("{:#?}", user_datetime);
+    debug!("{:#?}", calendar_params);
 
-    let date = user_datetime.user_utc.date_naive();
+    let date = NaiveDate::from_ymd_opt(
+        calendar_params.year,
+        calendar_params.month,
+        calendar_params.day,
+    )
+    .ok_or(DateError::UnreachableError)?;
 
     let (start_date, end_date) = calendar_month_start_end_dates(&date)?;
 
@@ -74,8 +79,10 @@ pub async fn hx_get_calendar_content(
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UserDateTime {
-    user_utc: DateTime<Utc>,
+pub struct CalendarParams {
+    year: i32,
+    month: u32,
+    day: u32,
 }
 
 fn calendar_month_start_end_dates(date: &NaiveDate) -> Result<(NaiveDate, NaiveDate), DateError> {
