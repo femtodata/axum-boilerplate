@@ -65,6 +65,9 @@ pub async fn hx_get_calendar_content(
     context.insert("weeks", &weeks_vec);
     context.insert("days_of_week", &days_of_week);
 
+    let month_str = today.format("%B %Y").to_string();
+    context.insert("month_string", &month_str);
+
     let rendered = tera.render("fragments/calendar-content.html", &context)?;
 
     Ok(Html(rendered).into_response())
