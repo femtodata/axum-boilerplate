@@ -191,6 +191,11 @@ pub async fn hx_get_calendar_week_content(
         .checked_first_day()
         .ok_or(DateError::UnreachableError)?;
 
+    let end_date = date
+        .week(Weekday::Sun)
+        .checked_last_day()
+        .ok_or(DateError::UnreachableError)?;
+
     let days_vec = start_date
         .iter_days()
         .take(7)
@@ -204,8 +209,18 @@ pub async fn hx_get_calendar_week_content(
     context.insert("days", &days_vec);
     context.insert("days_of_week", &days_of_week);
 
-    let month_str = date.format("%B %Y").to_string();
-    context.insert("month_string", &month_str);
+    let month_str = if start_date.month0() == end_date.month0() {
+        date.format("%B %Y").to_string()
+    } else {
+        let first = if start_date.year() == end_date.year() {
+            date.format("%B")
+        } else {
+            date.format("%B %Y")
+        };
+        format!("{} - {}", first, end_date.format("%B %Y"))
+    };
+
+    context.insert("week_string", &month_str);
 
     let next_week = start_date
         .checked_add_days(Days::new(7))
