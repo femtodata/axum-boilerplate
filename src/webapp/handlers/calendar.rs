@@ -178,6 +178,28 @@ impl CalendarDay {
     }
 }
 
+pub async fn hx_get_calendar_week_content(
+    jar: PrivateCookieJar,
+    State(tera): State<tera::Tera>,
+    Query(calendar_params): Query<CalendarParams>,
+    // Json(payload): Json<UserDate>,
+) -> Result<Response, WebappError> {
+    let date = NaiveDate::from_ymd_opt(
+        calendar_params.year,
+        calendar_params.month,
+        calendar_params.day,
+    )
+    .ok_or(DateError::UnreachableError)?;
+
+    let mut context = tera::Context::new();
+
+    let month_str = date.format("%B %Y").to_string();
+    context.insert("month_string", &month_str);
+
+    let rendered = tera.render("fragments/calendar-week-content.html", &context)?;
+    Ok(Html(rendered).into_response())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

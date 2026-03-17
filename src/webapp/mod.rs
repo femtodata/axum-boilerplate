@@ -143,6 +143,10 @@ pub async fn run_server() {
             "/calendar/month/content",
             get(handlers::calendar::hx_get_calendar_month_content),
         )
+        .route(
+            "/calendar/week/content",
+            get(handlers::calendar::hx_get_calendar_week_content),
+        )
         .route_layer(HxRequestGuardLayer::default())
         // auth routes
         .route(

@@ -1,0 +1,63 @@
+  <div class="h-100 pt-3">
+    <div class="d-flex flex-column h-100">
+      <div class="d-flex flex-row">
+        <button 
+          class="btn btn-primary"
+          style="
+            line-height: 1em;
+            font-size: 1em;
+          "
+        >Today</button>
+        <a
+          style="
+            margin-left: 1.5rem;
+            font-size: 1.5rem;
+            vertical-align: middle;
+            cursor: pointer;
+          "
+        >
+          <i class="bi bi-chevron-left"></i>
+        </a>
+        <a
+          style="
+            margin-left: 1rem;
+            font-size: 1.5rem;
+            vertical-align: middle;
+            cursor: pointer;
+          "
+        >
+          <i class="bi bi-chevron-right"></i>
+        </a>
+        <span 
+          style="
+            margin-left: 1.5rem;
+            font-size: 1.5rem;
+            vertical-align: middle;
+          "
+        >{{ month_string }}</span>
+        <div class="flex-grow-1"></div>
+        <button
+          class="btn btn-primary"
+          style="
+            line-height: 1em;
+            font-size: 1em;
+          "
+          hx-get="/calendar/month/content"
+          hx-vals='js:{...function() {
+            var today = new Date();
+            var date_params = {
+              "year": today.getFullYear(),
+              "month": today.getMonth() + 1,
+              "day": today.getDate()
+            };
+            return date_params;
+          }()}'
+          hx-target='#content'
+          hx-push-url='/calendar/month'
+        >Month</button>
+      </div>
+      <div>
+        Week content
+      </div>
+    </div>
+  </div>

@@ -64,12 +64,24 @@
           "
         >{{ month_string }}</span>
         <div class="flex-grow-1"></div>
-        <button
+        <button 
           class="btn btn-primary"
           style="
             line-height: 1em;
             font-size: 1em;
           "
+          hx-get="/calendar/week/content"
+          hx-vals='js:{...function() {
+            var today = new Date();
+            var date_params = {
+              "year": today.getFullYear(),
+              "month": today.getMonth() + 1,
+              "day": today.getDate()
+            };
+            return date_params;
+          }()}'
+          hx-target='#content'
+          hx-push-url='/calendar/week'
         >Week</button>
       </div>
       <div class="flex-grow-1 mt-3"
