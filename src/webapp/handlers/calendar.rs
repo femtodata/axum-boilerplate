@@ -1,6 +1,6 @@
 use axum::extract::{Path, Query};
 use axum::response::{Html, IntoResponse};
-use chrono::{DateTime, Datelike, Days, Months, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, Days, Months, NaiveDate, Utc, Weekday};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
@@ -67,7 +67,24 @@ pub async fn hx_get_calendar_month_content(
     )
     .ok_or(DateError::UnreachableError)?;
 
-    let (start_date, end_date) = calendar_month_start_end_dates(&date)?;
+    // let (start_date, end_date) = calendar_month_start_end_dates(&date)?;
+    let start_date = date
+        .with_day(1)
+        .ok_or(DateError::UnreachableError)?
+        .week(Weekday::Sun)
+        .checked_first_day()
+        .ok_or(DateError::UnreachableError)?;
+
+    let end_date = date
+        .with_day(1)
+        .ok_or(DateError::UnreachableError)?
+        .checked_add_months(Months::new(1))
+        .ok_or(DateError::UnreachableError)?
+        .checked_sub_days(Days::new(1))
+        .ok_or(DateError::UnreachableError)?
+        .week(Weekday::Sun)
+        .checked_last_day()
+        .ok_or(DateError::UnreachableError)?;
 
     let mut last_pushed = start_date;
 
@@ -130,28 +147,6 @@ pub struct CalendarParams {
     year: i32,
     month: u32,
     day: u32,
-}
-
-fn calendar_month_start_end_dates(date: &NaiveDate) -> Result<(NaiveDate, NaiveDate), DateError> {
-    let month_first = date.with_day(1).ok_or(DateError::UnreachableError)?;
-
-    let prefix_days = month_first.weekday().number_from_sunday() - 1;
-
-    let start_date = month_first
-        .checked_sub_days(Days::new(prefix_days.into()))
-        .ok_or(DateError::UnreachableError)?;
-
-    let month_last = date
-        .with_day(date.num_days_in_month().into())
-        .ok_or(DateError::UnreachableError)?;
-
-    let suffix_days = 7 - month_last.weekday().number_from_sunday();
-
-    let end_date = month_last
-        .checked_add_days(Days::new(suffix_days.into()))
-        .ok_or(DateError::UnreachableError)?;
-
-    Ok((start_date, end_date))
 }
 
 #[derive(Debug, thiserror::Error)]
