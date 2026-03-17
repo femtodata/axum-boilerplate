@@ -19,6 +19,7 @@
             return date_params;
           }()}'
           hx-target='#content'
+          hx-push-url='/calendar/month'
         >Today</button>
         <a
           hx-get="/calendar/content"
@@ -28,6 +29,7 @@
             "day": {{ prev_month_params["day"] }}
           }'
           hx-target='#content'
+          hx-push-url='/calendar/month/{{ prev_month_params["year"] }}/{{ prev_month_params["month"] }}/{{ prev_month_params["day"] }}'
           style="
             margin-left: 1.5rem;
             font-size: 1.5rem;
@@ -45,6 +47,7 @@
             "day": {{ next_month_params["day"] }}
           }'
           hx-target='#content'
+          hx-push-url='/calendar/month/{{ next_month_params["year"] }}/{{ next_month_params["month"] }}/{{ next_month_params["day"] }}'
           style="
             margin-left: 1rem;
             font-size: 1.5rem;
