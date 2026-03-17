@@ -7,7 +7,7 @@
   {% endif %}
 {% endblock title %}
 {% block content %}
-  <div hx-get="/calendar/content"
+  <div hx-get="/calendar/month/content"
     {% if calendar_params %}
       hx-vals='{
         "year": {{ calendar_params["year"] }},
