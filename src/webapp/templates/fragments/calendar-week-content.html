@@ -7,8 +7,28 @@
             line-height: 1em;
             font-size: 1em;
           "
+          hx-get="/calendar/week/content"
+          hx-vals='js:{...function() {
+            var today = new Date();
+            var date_params = {
+              "year": today.getFullYear(),
+              "month": today.getMonth() + 1,
+              "day": today.getDate()
+            };
+            return date_params;
+          }()}'
+          hx-target='#content'
+          hx-push-url='/calendar/week'
         >Today</button>
         <a
+          hx-get="/calendar/week/content"
+          hx-vals='{
+            "year": {{ prev_week_params["year"] }},
+            "month": {{ prev_week_params["month"] }},
+            "day": {{ prev_week_params["day"] }}
+          }'
+          hx-target='#content'
+          hx-push-url='/calendar/week/{{ prev_week_params["year"] }}/{{ prev_week_params["month"] }}/{{ prev_week_params["day"] }}'
           style="
             margin-left: 1.5rem;
             font-size: 1.5rem;
@@ -19,6 +39,14 @@
           <i class="bi bi-chevron-left"></i>
         </a>
         <a
+          hx-get="/calendar/week/content"
+          hx-vals='{
+            "year": {{ next_week_params["year"] }},
+            "month": {{ next_week_params["month"] }},
+            "day": {{ next_week_params["day"] }}
+          }'
+          hx-target='#content'
+          hx-push-url='/calendar/week/{{ next_week_params["year"] }}/{{ next_week_params["month"] }}/{{ next_week_params["day"] }}'
           style="
             margin-left: 1rem;
             font-size: 1.5rem;
@@ -57,7 +85,9 @@
         >Month</button>
       </div>
       <div>
-        Week content
+        {% for day in days %}
+          {{ day.display_str }}
+        {% endfor %}
       </div>
     </div>
   </div>

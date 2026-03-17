@@ -186,10 +186,46 @@ pub async fn hx_get_calendar_week_content(
     )
     .ok_or(DateError::UnreachableError)?;
 
+    let start_date = date
+        .week(Weekday::Sun)
+        .checked_first_day()
+        .ok_or(DateError::UnreachableError)?;
+
+    let days_vec = start_date
+        .iter_days()
+        .take(7)
+        .map(CalendarDay::new)
+        .collect::<Vec<CalendarDay>>();
+
+    let days_of_week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
     let mut context = tera::Context::new();
+
+    context.insert("days", &days_vec);
+    context.insert("days_of_week", &days_of_week);
 
     let month_str = date.format("%B %Y").to_string();
     context.insert("month_string", &month_str);
+
+    let next_week = start_date
+        .checked_add_days(Days::new(7))
+        .ok_or(DateError::UnreachableError)?;
+    let next_week_params = CalendarParams {
+        year: next_week.year(),
+        month: next_week.month(),
+        day: next_week.day(),
+    };
+    let prev_week = start_date
+        .checked_sub_days(Days::new(7))
+        .ok_or(DateError::UnreachableError)?;
+    let prev_week_params = CalendarParams {
+        year: prev_week.year(),
+        month: prev_week.month(),
+        day: prev_week.day(),
+    };
+
+    context.insert("next_week_params", &next_week_params);
+    context.insert("prev_week_params", &prev_week_params);
 
     let rendered = tera.render("fragments/calendar-week-content.html", &context)?;
     Ok(Html(rendered).into_response())
