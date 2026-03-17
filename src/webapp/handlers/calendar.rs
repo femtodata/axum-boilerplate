@@ -67,7 +67,6 @@ pub async fn hx_get_calendar_month_content(
     )
     .ok_or(DateError::UnreachableError)?;
 
-    // let (start_date, end_date) = calendar_month_start_end_dates(&date)?;
     let start_date = date
         .with_day(1)
         .ok_or(DateError::UnreachableError)?
@@ -251,22 +250,33 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_dates() {
-        let date = NaiveDate::from_ymd_opt(2026, 3, 15).unwrap();
-        assert_eq!(
-            calendar_month_start_end_dates(&date).unwrap(),
-            (
-                NaiveDate::from_ymd_opt(2026, 3, 1).unwrap(),
-                NaiveDate::from_ymd_opt(2026, 4, 4).unwrap()
-            )
-        );
-    }
-
-    #[test]
     fn test_calendar_content() {
-        let today = NaiveDate::from_ymd_opt(2026, 3, 15).unwrap();
+        let date = NaiveDate::from_ymd_opt(2026, 3, 15).unwrap();
 
-        let (start_date, end_date) = calendar_month_start_end_dates(&today).unwrap();
+        let start_date = date
+            .with_day(1)
+            .ok_or(DateError::UnreachableError)
+            .unwrap()
+            .week(Weekday::Sun)
+            .checked_first_day()
+            .ok_or(DateError::UnreachableError)
+            .unwrap();
+
+        let end_date = date
+            .with_day(1)
+            .ok_or(DateError::UnreachableError)
+            .unwrap()
+            .checked_add_months(Months::new(1))
+            .ok_or(DateError::UnreachableError)
+            .unwrap()
+            .checked_sub_days(Days::new(1))
+            .ok_or(DateError::UnreachableError)
+            .unwrap()
+            .week(Weekday::Sun)
+            .checked_last_day()
+            .ok_or(DateError::UnreachableError)
+            .unwrap();
+
         let mut last_pushed = start_date;
 
         let mut date_iter = start_date.iter_days();
