@@ -52,7 +52,7 @@ pub async fn get_calendar_month_ymd(
     Ok(Html(rendered).into_response())
 }
 
-pub async fn hx_get_calendar_content(
+pub async fn hx_get_calendar_month_content(
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
     Query(calendar_params): Query<CalendarParams>,
@@ -120,7 +120,7 @@ pub async fn hx_get_calendar_content(
     context.insert("next_month_params", &next_month_params);
     context.insert("prev_month_params", &prev_month_params);
 
-    let rendered = tera.render("fragments/calendar-content.html", &context)?;
+    let rendered = tera.render("fragments/calendar-month-content.html", &context)?;
 
     Ok(Html(rendered).into_response())
 }

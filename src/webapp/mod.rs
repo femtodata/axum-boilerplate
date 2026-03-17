@@ -141,7 +141,7 @@ pub async fn run_server() {
         .route("/goals/{id}/edit", get(handlers::goal::hx_get_edit_goal))
         .route(
             "/calendar/content",
-            get(handlers::calendar::hx_get_calendar_content),
+            get(handlers::calendar::hx_get_calendar_month_content),
         )
         .route_layer(HxRequestGuardLayer::default())
         // auth routes
