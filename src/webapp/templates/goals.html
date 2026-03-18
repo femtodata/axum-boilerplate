@@ -11,10 +11,10 @@
     <button 
       id="button-new"
       hx-get="/goals/new"
-      hx-target="#goals-modal-content"
+      hx-target="#modal-content"
       hx-trigger="click"
       data-bs-toggle="modal"
-      data-bs-target="#goals-modal"
+      data-bs-target="#modal"
       class="btn btn-primary"
       style="
         font-size: 1em;
@@ -28,21 +28,21 @@
     {% include "fragments/goals-table.html" %}
   </div>
   <!-- modal -->
-  <div id="goals-modal"
+  <div id="modal"
     class="modal modal-blur fade"
     style="display: none"
     aria-hidden="false"
     tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-      <div id="goals-modal-content" class="modal-content">
+      <div id="modal-content" class="modal-content">
       </div>
     </div>
   </div>
   <script>
-  var goalModal = new bootstrap.Modal('#goals-modal');
+  var goalModal = new bootstrap.Modal('#modal');
   function closeGoalModal() {
     goalModal.hide();
-    history.pushState({}, "", "/goals");
+    // history.pushState({}, "", "/goals");
   };
   document.body.addEventListener("trigger_close", function(evt){
     closeGoalModal();

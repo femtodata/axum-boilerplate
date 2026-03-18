@@ -65,7 +65,7 @@
       class="btn btn-secondary"
       {% if edit %}
         hx-get="/goals/{{ goal['id'] }}"
-        hx-target="#goals-modal-content"
+        hx-target="#modal-content"
         hx-swap="innerHTML"
       {% else %}
         onClick="closeGoalModal();"
