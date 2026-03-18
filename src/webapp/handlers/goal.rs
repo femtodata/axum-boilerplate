@@ -120,7 +120,7 @@ pub async fn hx_post_new_goal(
 
     // don't need to push url, closing modal via trigger handles url history
     let trigger = HxResponseTrigger::normal([
-        HxEvent::new("trigger_close"),
+        HxEvent::new("trigger_close_modal"),
         HxEvent::new("trigger_table_reload"),
     ]);
 
@@ -227,8 +227,9 @@ pub async fn hx_delete_goal(
     }
 
     // don't need to push url, closing modal via trigger handles url history
+    // ignore above, not pushing url for modal actions
     let trigger = HxResponseTrigger::normal([
-        HxEvent::new("trigger_close"),
+        HxEvent::new("trigger_close_modal"),
         HxEvent::new("trigger_table_reload"),
     ]);
 
@@ -294,10 +295,11 @@ pub async fn hx_patch_goal(
     }
 
     let _ = diesel::update(&goal).set(&goal_form).execute(&mut conn)?;
-    //
+
     // don't need to push url, closing modal via trigger handles url history
+    // ignore above, not pushing url for modal actions
     let trigger = HxResponseTrigger::normal([
-        HxEvent::new("trigger_close"),
+        HxEvent::new("trigger_close_modal"),
         HxEvent::new("trigger_table_reload"),
     ]);
 

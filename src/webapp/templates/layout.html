@@ -28,5 +28,27 @@
         </div>
       </div>
     </div>
+    <!-- modal -->
+    <div id="modal"
+      class="modal modal-blur fade"
+      style="display: none"
+      aria-hidden="false"
+      tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div id="modal-content" class="modal-content">
+        </div>
+      </div>
+    </div>
+    <script>
+    var modal = new bootstrap.Modal('#modal');
+    function closeModal() {
+      modal.hide();
+      // history.pushState({}, "", "/goals");
+    };
+    document.body.addEventListener("trigger_close_modal", function(evt){
+      closeModal();
+    });
+    </script>
+    <!-- end modal -->
   </body>
 </html>
