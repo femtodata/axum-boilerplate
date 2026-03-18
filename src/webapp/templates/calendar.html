@@ -7,7 +7,11 @@
   {% endif %}
 {% endblock title %}
 {% block content %}
-  <div hx-get="/calendar/month/content"
+  <div id="calendar-content"
+    style="
+      height: 100%;
+    "
+    hx-get="/calendar/month/content"
     {% if calendar_params %}
       hx-vals='{
         "year": {{ calendar_params["year"] }},
@@ -25,7 +29,7 @@
         return date_params;
       }()}'
     {% endif %}
-    hx-target="#content"
+    hx-target="#calendar-content"
     hx-trigger="load">
   </div>
 {% endblock content %}

@@ -17,7 +17,7 @@
             };
             return date_params;
           }()}'
-          hx-target='#content'
+          hx-target='#calendar-content'
           hx-push-url='/calendar/week'
         >Today</button>
         <a
@@ -27,7 +27,7 @@
             "month": {{ prev_week_params["month"] }},
             "day": {{ prev_week_params["day"] }}
           }'
-          hx-target='#content'
+          hx-target='#calendar-content'
           hx-push-url='/calendar/week/{{ prev_week_params["year"] }}/{{ prev_week_params["month"] }}/{{ prev_week_params["day"] }}'
           style="
             margin-left: 1.5rem;
@@ -45,7 +45,7 @@
             "month": {{ next_week_params["month"] }},
             "day": {{ next_week_params["day"] }}
           }'
-          hx-target='#content'
+          hx-target='#calendar-content'
           hx-push-url='/calendar/week/{{ next_week_params["year"] }}/{{ next_week_params["month"] }}/{{ next_week_params["day"] }}'
           style="
             margin-left: 1rem;
@@ -80,7 +80,7 @@
             };
             return date_params;
           }()}'
-          hx-target='#content'
+          hx-target='#calendar-content'
           hx-push-url='/calendar/month'
         >Month</button>
       </div>
