@@ -3,11 +3,11 @@ use std::io::{StdinLock, StdoutLock, Write, stdin, stdout};
 use axum_boilerplate::db::{
     establish_connection,
     models::{
-        EmailAddress, Goal, NewGoal, NewUser, User,
+        AppliedGoal, EmailAddress, Goal, NewGoal, NewUser, User,
         goal::create_new_goal,
         user::{create_new_user, hash_password},
     },
-    schema::{goals, users},
+    schema::{applied_goals, goals, users},
 };
 use diesel::{debug_query, pg::Pg, prelude::*};
 
@@ -30,6 +30,9 @@ enum Commands {
 
     #[command(subcommand)]
     Goal(GoalCommands),
+
+    #[command(subcommand)]
+    AppliedGoal(AppliedGoalCommands),
 }
 
 #[derive(Debug, Subcommand)]
@@ -44,6 +47,11 @@ enum UserCommands {
 enum GoalCommands {
     New,
     Show { user_id: Option<i32> },
+}
+
+#[derive(Debug, Subcommand)]
+enum AppliedGoalCommands {
+    Show,
 }
 
 fn main() {
@@ -72,6 +80,11 @@ fn main() {
             }
             GoalCommands::Show { user_id } => {
                 show_goals(*user_id);
+            }
+        },
+        Commands::AppliedGoal(applied_goal_command) => match applied_goal_command {
+            AppliedGoalCommands::Show => {
+                show_applied_goals();
             }
         },
     };
@@ -268,4 +281,17 @@ fn show_goals(user_id: Option<i32>) {
     let goals: Vec<Goal> = Goal::belonging_to(&users).load::<Goal>(conn).unwrap();
 
     println!("Goals: {:#?}", goals);
+}
+
+fn show_applied_goals() {
+    let connection = &mut establish_connection(None);
+    let results = applied_goals::table
+        .select(AppliedGoal::as_select())
+        .load(connection)
+        .expect("Error loading applied_goals");
+
+    println!("Display {} applied_goals", results.len());
+    for applied_goal in results {
+        println!("{:#?}", applied_goal);
+    }
 }
