@@ -16,7 +16,6 @@ use diesel::{debug_query, pg::Pg, prelude::*};
 use termion::input::TermRead;
 
 use clap::{Parser, Subcommand};
-use tracing::{debug, info};
 use validator::Validate;
 
 #[derive(Debug, Parser)]
@@ -152,7 +151,7 @@ fn create_new_user_from_prompt() {
 
     let user = create_new_user(&new_user, &mut conn).expect("error saving user");
 
-    debug!("created: {user:#?}");
+    println!("created: {user:#?}");
 }
 
 fn prompt_and_hash_password(stdin: &mut StdinLock, stdout: &mut StdoutLock) -> Option<String> {
