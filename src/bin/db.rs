@@ -3,12 +3,14 @@ use std::io::{StdinLock, StdoutLock, Write, stdin, stdout};
 use axum_boilerplate::db::{
     establish_connection,
     models::{
-        AppliedGoal, EmailAddress, Goal, NewGoal, NewUser, User,
+        AppliedGoal, EmailAddress, Goal, NewAppliedGoal, NewGoal, NewUser, User,
+        applied_goal::create_new_applied_goal,
         goal::create_new_goal,
         user::{create_new_user, hash_password},
     },
     schema::{applied_goals, goals, users},
 };
+use chrono::NaiveDate;
 use diesel::{debug_query, pg::Pg, prelude::*};
 
 use termion::input::TermRead;
@@ -51,6 +53,13 @@ enum GoalCommands {
 
 #[derive(Debug, Subcommand)]
 enum AppliedGoalCommands {
+    New {
+        goal_id: i32,
+        year: i32,
+        month: u32,
+        day: u32,
+        points_possible: i32,
+    },
     Show,
 }
 
@@ -85,6 +94,15 @@ fn main() {
         Commands::AppliedGoal(applied_goal_command) => match applied_goal_command {
             AppliedGoalCommands::Show => {
                 show_applied_goals();
+            }
+            AppliedGoalCommands::New {
+                goal_id,
+                year,
+                month,
+                day,
+                points_possible,
+            } => {
+                new_applied_goal(*goal_id, *year, *month, *day, *points_possible);
             }
         },
     };
@@ -294,4 +312,17 @@ fn show_applied_goals() {
     for applied_goal in results {
         println!("{:#?}", applied_goal);
     }
+}
+
+fn new_applied_goal(goal_id: i32, year: i32, month: u32, day: u32, points_possible: i32) {
+    let connection = &mut establish_connection(None);
+    let date = NaiveDate::from_ymd_opt(year, month, day)
+        .expect("could not parse {year}, {month}, {day} into NaiveDate");
+    let new_applied_goal = NewAppliedGoal {
+        goal_id,
+        date,
+        points_possible,
+    };
+    let applied_goal = create_new_applied_goal(&new_applied_goal, connection).unwrap();
+    println!("{:#?}", applied_goal);
 }
