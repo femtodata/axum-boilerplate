@@ -136,12 +136,6 @@ async fn get_sso_callback(
     let email = claims.email().ok_or(WebappError::MissingEmailError)?;
     debug!("sso login email: {email:#?}");
 
-    // println!("params: {:#?}", params);
-    // println!("token_response: {:#?}", token_response);
-    // println!("id_token: {:#?}", id_token);
-    // println!("claims: {:#?}", claims);
-    // println!("email: {}", email.as_str());
-
     let mut conn = state.pool.clone().get()?;
 
     let user = get_user_by_email(email, &mut conn);
