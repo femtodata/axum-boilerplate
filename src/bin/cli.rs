@@ -60,6 +60,7 @@ enum AppliedGoalCommands {
         points_possible: i32,
     },
     Show,
+    Clear,
 }
 
 fn main() {
@@ -102,6 +103,9 @@ fn main() {
                 points_possible,
             } => {
                 new_applied_goal(*goal_id, *year, *month, *day, *points_possible);
+            }
+            AppliedGoalCommands::Clear => {
+                clear_applied_goals();
             }
         },
     };
@@ -324,4 +328,14 @@ fn new_applied_goal(goal_id: i32, year: i32, month: u32, day: u32, points_possib
     };
     let applied_goal = create_new_applied_goal(&new_applied_goal, connection).unwrap();
     println!("{:#?}", applied_goal);
+}
+
+fn clear_applied_goals() {
+    let connection = &mut establish_connection(None);
+
+    let result = diesel::delete(applied_goals::table)
+        .execute(connection)
+        .unwrap();
+
+    println!("deleted {} applied_goals", result);
 }
