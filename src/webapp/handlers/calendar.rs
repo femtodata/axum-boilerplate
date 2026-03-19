@@ -65,25 +65,25 @@ pub async fn hx_get_calendar_month_content(
         calendar_params.month,
         calendar_params.day,
     )
-    .ok_or(DateError::UnreachableError)?;
+    .ok_or(WebappError::DateCreationError { calendar_params })?;
 
     let start_date = date
         .with_day(1)
-        .ok_or(DateError::UnreachableError)?
+        .ok_or(WebappError::UnreachableDateError)?
         .week(Weekday::Sun)
         .checked_first_day()
-        .ok_or(DateError::UnreachableError)?;
+        .ok_or(WebappError::UnreachableDateError)?;
 
     let end_date = date
         .with_day(1)
-        .ok_or(DateError::UnreachableError)?
+        .ok_or(WebappError::UnreachableDateError)?
         .checked_add_months(Months::new(1))
-        .ok_or(DateError::UnreachableError)?
+        .ok_or(WebappError::UnreachableDateError)?
         .checked_sub_days(Days::new(1))
-        .ok_or(DateError::UnreachableError)?
+        .ok_or(WebappError::UnreachableDateError)?
         .week(Weekday::Sun)
         .checked_last_day()
-        .ok_or(DateError::UnreachableError)?;
+        .ok_or(WebappError::UnreachableDateError)?;
 
     let mut last_pushed = start_date;
 
@@ -96,10 +96,13 @@ pub async fn hx_get_calendar_month_content(
         let mut days_vec = Vec::new();
         for _ in 0..7 {
             days_vec.push(CalendarDay::new(
-                date_iter.next().ok_or(DateError::UnreachableError)?,
+                date_iter.next().ok_or(WebappError::UnreachableDateError)?,
             ));
         }
-        last_pushed = days_vec.last().ok_or(DateError::UnreachableError)?.date;
+        last_pushed = days_vec
+            .last()
+            .ok_or(WebappError::UnreachableDateError)?
+            .date;
         weeks_vec.push(days_vec);
     }
 
@@ -114,9 +117,9 @@ pub async fn hx_get_calendar_month_content(
 
     let next_month = date
         .with_day(1)
-        .ok_or(DateError::UnreachableError)?
+        .ok_or(WebappError::UnreachableDateError)?
         .checked_add_months(Months::new(1))
-        .ok_or(DateError::UnreachableError)?;
+        .ok_or(WebappError::UnreachableDateError)?;
     let next_month_params = CalendarParams {
         year: next_month.year(),
         month: next_month.month(),
@@ -124,9 +127,9 @@ pub async fn hx_get_calendar_month_content(
     };
     let prev_month = date
         .with_day(1)
-        .ok_or(DateError::UnreachableError)?
+        .ok_or(WebappError::UnreachableDateError)?
         .checked_sub_months(Months::new(1))
-        .ok_or(DateError::UnreachableError)?;
+        .ok_or(WebappError::UnreachableDateError)?;
     let prev_month_params = CalendarParams {
         year: prev_month.year(),
         month: prev_month.month(),
@@ -143,15 +146,9 @@ pub async fn hx_get_calendar_month_content(
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CalendarParams {
-    year: i32,
-    month: u32,
-    day: u32,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum DateError {
-    #[error("This date error should be unreachable")]
-    UnreachableError,
+    pub year: i32,
+    pub month: u32,
+    pub day: u32,
 }
 
 #[derive(Serialize)]
@@ -183,17 +180,17 @@ pub async fn hx_get_calendar_week_content(
         calendar_params.month,
         calendar_params.day,
     )
-    .ok_or(DateError::UnreachableError)?;
+    .ok_or(WebappError::DateCreationError { calendar_params })?;
 
     let start_date = date
         .week(Weekday::Sun)
         .checked_first_day()
-        .ok_or(DateError::UnreachableError)?;
+        .ok_or(WebappError::UnreachableDateError)?;
 
     let end_date = date
         .week(Weekday::Sun)
         .checked_last_day()
-        .ok_or(DateError::UnreachableError)?;
+        .ok_or(WebappError::UnreachableDateError)?;
 
     let days_vec = start_date
         .iter_days()
@@ -223,7 +220,7 @@ pub async fn hx_get_calendar_week_content(
 
     let next_week = start_date
         .checked_add_days(Days::new(7))
-        .ok_or(DateError::UnreachableError)?;
+        .ok_or(WebappError::UnreachableDateError)?;
     let next_week_params = CalendarParams {
         year: next_week.year(),
         month: next_week.month(),
@@ -231,7 +228,7 @@ pub async fn hx_get_calendar_week_content(
     };
     let prev_week = start_date
         .checked_sub_days(Days::new(7))
-        .ok_or(DateError::UnreachableError)?;
+        .ok_or(WebappError::UnreachableDateError)?;
     let prev_week_params = CalendarParams {
         year: prev_week.year(),
         month: prev_week.month(),
@@ -255,26 +252,26 @@ mod tests {
 
         let start_date = date
             .with_day(1)
-            .ok_or(DateError::UnreachableError)
+            .ok_or(WebappError::UnreachableDateError)
             .unwrap()
             .week(Weekday::Sun)
             .checked_first_day()
-            .ok_or(DateError::UnreachableError)
+            .ok_or(WebappError::UnreachableDateError)
             .unwrap();
 
         let end_date = date
             .with_day(1)
-            .ok_or(DateError::UnreachableError)
+            .ok_or(WebappError::UnreachableDateError)
             .unwrap()
             .checked_add_months(Months::new(1))
-            .ok_or(DateError::UnreachableError)
+            .ok_or(WebappError::UnreachableDateError)
             .unwrap()
             .checked_sub_days(Days::new(1))
-            .ok_or(DateError::UnreachableError)
+            .ok_or(WebappError::UnreachableDateError)
             .unwrap()
             .week(Weekday::Sun)
             .checked_last_day()
-            .ok_or(DateError::UnreachableError)
+            .ok_or(WebappError::UnreachableDateError)
             .unwrap();
 
         let mut last_pushed = start_date;

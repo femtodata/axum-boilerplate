@@ -8,15 +8,16 @@ use axum::{
 };
 use axum_extra::extract::cookie::Key;
 use axum_htmx::{AutoVaryLayer, HxRequestGuardLayer};
-use handlers::calendar::DateError;
+use handlers::calendar::CalendarParams;
 use rand::distr::{Alphanumeric, SampleString};
 use state::{AppState, InnerState};
-use std::{env, sync::Arc};
+use std::{env, sync::Arc, time::Duration};
 use tera::Tera;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
-use tower_http::trace::TraceLayer;
-use tracing::info;
+use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
+use tracing::{Level, Span, error, event, info};
+use tracing_subscriber::EnvFilter;
 
 mod handlers;
 mod sso;
@@ -84,8 +85,11 @@ pub enum WebappError {
     #[error("HxRequest expected but not found")]
     HxRequestExpectedError,
 
-    #[error(transparent)]
-    UnreachableDateError(#[from] DateError),
+    #[error("This date error should be unreachable")]
+    UnreachableDateError,
+
+    #[error("Could not create a date with {}, {}, {}", .calendar_params.year, .calendar_params.month, .calendar_params.day)]
+    DateCreationError { calendar_params: CalendarParams },
 
     #[error("Test error")]
     TestError,
@@ -99,9 +103,7 @@ pub enum WebappError {
 
 impl IntoResponse for WebappError {
     fn into_response(self) -> axum::response::Response {
-        tracing::error!("WebappError: {:#?}", self);
-        info!("WebappError: {:#?}", self);
-        println!("WebappError: {:#?}", self);
+        error!("WebappError: {}", self);
         (StatusCode::INTERNAL_SERVER_ERROR, format!("{:#?}", self)).into_response()
     }
 }
@@ -171,7 +173,11 @@ pub async fn run_server() {
         .merge(sso::sso_router())
         .layer(
             ServiceBuilder::new()
-                .layer(TraceLayer::new_for_http())
+                .layer(TraceLayer::new_for_http().on_failure(
+                    |error: ServerErrorsFailureClass, latency: Duration, _span: &Span| {
+                        tracing::event!(Level::ERROR, "an error has occurred: {error:#?}")
+                    },
+                ))
                 .layer(middleware::from_fn_with_state(
                     app_state.clone(),
                     handlers::middleware::error_middleware,
