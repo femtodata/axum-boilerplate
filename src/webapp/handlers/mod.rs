@@ -76,18 +76,19 @@ pub async fn post_login(
 
     if let Some(user) = get_user_by_username(&login_payload.username, &mut conn) {
         // empty password means no password login
-        if let Some(hashed_password) = user.hashed_password {
-            if verify_password(&login_payload.password, &hashed_password)
+        if let Some(hashed_password) = user.hashed_password
+            && verify_password(&login_payload.password, &hashed_password)
                 .ok()
-                .unwrap_or_else(|| false)
-            {
-                let updated_jar = jar.add(Cookie::build(("username", user.username)).path("/"));
+                .unwrap_or(false)
+        {
+            let updated_jar = jar
+                .add(Cookie::build(("username", user.username)).path("/"))
+                .add(Cookie::build(("user_id", user.id.to_string())).path("/"));
 
-                // get next_url from REFERER header
-                let next_url = get_next_url_from_headers(headers);
+            // get next_url from REFERER header
+            let next_url = get_next_url_from_headers(headers);
 
-                return Ok((updated_jar, Redirect::to(next_url.as_str()).into_response()));
-            }
+            return Ok((updated_jar, Redirect::to(next_url.as_str()).into_response()));
         }
     };
 
