@@ -30,7 +30,7 @@ pub async fn get_login(
     State(state): State<AppState>,
 ) -> Result<(PrivateCookieJar, Response), WebappError> {
     // you only get here if you manually go to url, so we don't worry about query params / next
-    if let Some(_user) = jar.get("user") {
+    if let Some(_username) = jar.get("username") {
         return Ok((jar, Redirect::to("/").into_response()));
     }
 
@@ -81,7 +81,7 @@ pub async fn post_login(
                 .ok()
                 .unwrap_or_else(|| false)
             {
-                let updated_jar = jar.add(Cookie::build(("user", user.username)).path("/"));
+                let updated_jar = jar.add(Cookie::build(("username", user.username)).path("/"));
 
                 // get next_url from REFERER header
                 let next_url = get_next_url_from_headers(headers);
@@ -122,7 +122,7 @@ pub fn render_login_with_context(
 pub async fn get_logout(
     jar: PrivateCookieJar,
 ) -> Result<(PrivateCookieJar, Response), WebappError> {
-    let updated_jar = jar.remove(Cookie::from("user"));
+    let updated_jar = jar.remove(Cookie::from("username"));
     Ok((updated_jar, Redirect::to("/").into_response()))
 }
 
@@ -132,9 +132,9 @@ pub async fn get_index(
 ) -> Result<Html<String>, WebappError> {
     let mut context = tera::Context::new();
 
-    if let Some(user) = jar.get("user") {
-        debug!("logged in user: {:#?}", user);
-        context.insert("user", &user.to_string())
+    if let Some(username) = jar.get("username") {
+        debug!("logged in user: {:#?}", username);
+        context.insert("user", &username.to_string())
     }
 
     context.insert("content", "Home Content");

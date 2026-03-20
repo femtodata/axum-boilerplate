@@ -34,8 +34,8 @@ fn render_goals(
     tera: tera::Tera,
     context: &mut tera::Context,
 ) -> Result<String, WebappError> {
-    let username = match jar.get("user") {
-        Some(user) => user.value().to_string(),
+    let username = match jar.get("username") {
+        Some(username) => username.value().to_string(),
         None => return Err(WebappError::NotLoggedInError),
     };
     let mut conn = state.pool.clone().get()?;
@@ -56,8 +56,8 @@ pub async fn hx_get_goals_table(
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
-    let username = match jar.get("user") {
-        Some(user) => user.value().to_string(),
+    let username = match jar.get("username") {
+        Some(username) => username.value().to_string(),
         None => return Err(WebappError::NotLoggedInError),
     };
     let mut conn = state.pool.clone().get()?;
@@ -90,8 +90,8 @@ pub async fn hx_post_new_goal(
     State(tera): State<tera::Tera>,
     Form(goal_form): Form<GoalForm>,
 ) -> Result<Response, WebappError> {
-    let username = match jar.get("user") {
-        Some(user) => user.value().to_string(),
+    let username = match jar.get("username") {
+        Some(username) => username.value().to_string(),
         None => return Err(WebappError::NotLoggedInError),
     };
     let mut conn = state.pool.clone().get()?;

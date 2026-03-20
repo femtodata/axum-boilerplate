@@ -16,8 +16,8 @@ pub async fn auth_middleware(
     request: Request,
     next: Next,
 ) -> Result<Response, WebappError> {
-    if let Some(user) = jar.get("user") {
-        debug!("logged in user: {}", user);
+    if let Some(username) = jar.get("username") {
+        debug!("logged in user: {}", username);
     } else {
         let redirect_url = "/login?next_url=".to_string() + request.uri().to_string().as_str();
         if hx_request {
