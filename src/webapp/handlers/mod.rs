@@ -98,7 +98,7 @@ pub async fn post_login(
 }
 
 pub fn get_next_url_from_headers(headers: HeaderMap) -> String {
-    let next_url = headers
+    headers
         .get("REFERER")
         .and_then(|x| x.to_str().ok())
         .and_then(|x| Url::from_str(x).ok())
@@ -107,8 +107,7 @@ pub fn get_next_url_from_headers(headers: HeaderMap) -> String {
                 .query_pairs()
                 .find_map(|(k, v)| (k == "next_url").then(|| v.into_owned()))
         })
-        .unwrap_or_else(|| "/".to_string());
-    next_url
+        .unwrap_or_else(|| "/".to_string())
 }
 
 pub fn render_login_with_context(
