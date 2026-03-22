@@ -1,8 +1,13 @@
+use std::collections::HashMap;
+
 use chrono::NaiveDate;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::db::{models::Goal, schema::applied_goals};
+use crate::db::{
+    models::Goal,
+    schema::{applied_goals, goals},
+};
 
 #[derive(
     Debug,
@@ -49,4 +54,38 @@ pub fn create_new_applied_goal(
         .values(new_applied_goal)
         .returning(AppliedGoal::as_returning())
         .get_result(conn)
+}
+
+pub fn get_applied_goals_for_dates(
+    user_id: i32,
+    goal_id: Option<i32>,
+    start_date: NaiveDate,
+    end_date: NaiveDate,
+    conn: &mut PgConnection,
+) -> Result<Vec<Vec<AppliedGoal>>, diesel::result::Error> {
+    let goals: Vec<Goal> = match goal_id {
+        Some(goal_id) => vec![goals::table.find(goal_id).first(conn)?],
+        None => goals::table
+            .select(Goal::as_select())
+            .filter(goals::user_id.eq(user_id))
+            .load(conn)?,
+    };
+
+    let applied_goals = AppliedGoal::belonging_to(&goals)
+        .select(AppliedGoal::as_select())
+        .filter(applied_goals::date.between(start_date, end_date))
+        .load(conn)?
+        .grouped_by(&goals);
+
+    let mut return_val: HashMap<Goal, HashMap<NaiveDate, AppliedGoal>> = HashMap::new();
+
+    Ok(applied_goals)
+}
+
+pub fn create_applied_goals_for_dates(
+    goal_id: i32,
+    dates: Vec<NaiveDate>,
+    points_possible: i32,
+) -> Result<AppliedGoal, diesel::result::Error> {
+    todo!()
 }

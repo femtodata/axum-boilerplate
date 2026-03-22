@@ -1,7 +1,7 @@
 use axum_boilerplate::db::{
     models::{
         AppliedGoal, EmailAddress, Goal, NewAppliedGoal, NewGoal, NewUser, User,
-        applied_goal::create_new_applied_goal,
+        applied_goal::{create_new_applied_goal, get_applied_goals_for_dates},
         goal::{GoalContext, GoalForm, create_new_goal},
         user::{create_new_user, hash_password, verify_password},
     },
@@ -43,11 +43,11 @@ fn get_goal_02_form() -> GoalForm {
     }
 }
 
-fn get_applied_goal_01(goal_id: i32, date: NaiveDate) -> NewAppliedGoal {
+fn get_applied_goal(goal_id: i32, date: NaiveDate, points_possible: i32) -> NewAppliedGoal {
     NewAppliedGoal {
         goal_id,
         date,
-        points_possible: 3,
+        points_possible,
     }
 }
 
@@ -69,9 +69,15 @@ fn test_db_ops() {
     test_user_goal(&mut conn, &user, &goal);
     let new_goal = test_goal_form(&mut conn, &user);
 
-    let applied_goal = test_applied_goal(&mut conn, &goal);
+    let applied_goal = test_applied_goal(
+        &mut conn,
+        &goal,
+        NaiveDate::from_ymd_opt(2026, 3, 1).unwrap(),
+    );
 
     test_applied_goal_relation(&mut conn, &applied_goal, &goal, &user);
+
+    test_get_applied_goals(conn, user, goal, applied_goal);
 }
 
 fn test_user(conn: &mut diesel::PgConnection) -> User {
@@ -143,12 +149,10 @@ fn test_goal_form(conn: &mut PgConnection, user: &User) -> Goal {
     goal
 }
 
-fn test_applied_goal(conn: &mut diesel::PgConnection, goal: &Goal) -> AppliedGoal {
+fn test_applied_goal(conn: &mut diesel::PgConnection, goal: &Goal, date: NaiveDate) -> AppliedGoal {
     println!("testing applied_goal");
 
-    let today = Local::now().date_naive();
-
-    let new_applied_goal = get_applied_goal_01(goal.id, today);
+    let new_applied_goal = get_applied_goal(goal.id, date, 5);
     let applied_goal = create_new_applied_goal(&new_applied_goal, conn)
         .unwrap_or_else(|err| panic!("error create new applied_goal: {err}"));
     assert_eq!(applied_goal.goal_id, goal.id);
@@ -193,4 +197,36 @@ fn test_applied_goal_relation(
         .unwrap_or_else(|err| panic!("Error loading applied_goals: {err:#?}"));
 
     assert!(goal_applied_goals.contains(applied_goal));
+}
+
+fn test_get_applied_goals(
+    mut conn: PgConnection,
+    user: User,
+    goal: Goal,
+    applied_goal: AppliedGoal,
+) {
+    let mut applied_goals = vec![applied_goal];
+    for date in [
+        NaiveDate::from_ymd_opt(2026, 3, 2).unwrap(),
+        NaiveDate::from_ymd_opt(2026, 3, 3).unwrap(),
+        NaiveDate::from_ymd_opt(2026, 3, 4).unwrap(),
+        NaiveDate::from_ymd_opt(2026, 4, 4).unwrap(),
+    ] {
+        let new_applied_goal = get_applied_goal(goal.id, date, 5);
+        let applied_goal = create_new_applied_goal(&new_applied_goal, &mut conn)
+            .unwrap_or_else(|err| panic!("error create new applied_goal: {err}"));
+
+        applied_goals.push(applied_goal);
+    }
+
+    let returned_applied_goals = get_applied_goals_for_dates(
+        user.id,
+        Some(goal.id),
+        NaiveDate::from_ymd_opt(2026, 3, 1).unwrap(),
+        NaiveDate::from_ymd_opt(2026, 3, 4).unwrap(),
+        &mut conn,
+    )
+    .unwrap_or_else(|err| panic!("error getting applied goals for dates: {err}"));
+
+    println!("returned AppliedGoals: {:#?}", returned_applied_goals);
 }

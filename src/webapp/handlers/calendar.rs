@@ -57,14 +57,9 @@ pub async fn hx_get_calendar_month_content(
     Query(calendar_params): Query<CalendarParams>,
     // Json(payload): Json<UserDate>,
 ) -> Result<Response, WebappError> {
-    let mut context = tera::Context::new();
-
-    if let Some(user_context) = user_context {
-        context.insert("user_context", &user_context)
-    } else {
+    let Some(user_context) = user_context else {
         return Err(WebappError::NotLoggedInError);
-    }
-    debug!("{:#?}", calendar_params);
+    };
 
     let date = NaiveDate::from_ymd_opt(
         calendar_params.year,
@@ -113,6 +108,8 @@ pub async fn hx_get_calendar_month_content(
     }
 
     let days_of_week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    let mut context = tera::Context::new();
 
     context.insert("weeks", &weeks_vec);
     context.insert("days_of_week", &days_of_week);
@@ -175,10 +172,15 @@ impl CalendarDay {
 }
 
 pub async fn hx_get_calendar_week_content(
+    Extension(user_context): Extension<Option<UserContext>>,
     State(tera): State<tera::Tera>,
     Query(calendar_params): Query<CalendarParams>,
     // Json(payload): Json<UserDate>,
 ) -> Result<Response, WebappError> {
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
+    };
+
     let date = NaiveDate::from_ymd_opt(
         calendar_params.year,
         calendar_params.month,
