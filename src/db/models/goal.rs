@@ -4,7 +4,7 @@ use crate::db::{models::user::User, schema::goals};
 use diesel::PgConnection;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-use validator::{Validate, ValidateArgs, ValidationError};
+use validator::{Validate, ValidationError};
 
 #[derive(
     Debug,
@@ -70,11 +70,9 @@ fn validate_goal_title(title: &str, context: &mut GoalContext) -> Result<(), Val
             return Err(ValidationError::new("duplicate_title")
                 .with_message(Cow::from("A goal with this title already exists.")));
         }
-        return Ok(());
+        Ok(())
     } else {
-        return Err(
-            ValidationError::new("db_error").with_message(Cow::from("An error has occurred"))
-        );
+        Err(ValidationError::new("db_error").with_message(Cow::from("An error has occurred")))
     }
 }
 

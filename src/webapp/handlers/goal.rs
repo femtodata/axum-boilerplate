@@ -15,15 +15,14 @@ use axum::{
     response::{Html, IntoResponse, Response},
 };
 use axum_extra::extract::PrivateCookieJar;
-use axum_htmx::{HxEvent, HxRequest, HxResponseTrigger};
+use axum_htmx::{HxEvent, HxResponseTrigger};
 use diesel::prelude::*;
 use indoc::formatdoc;
-use tracing::{debug, info};
+use tracing::debug;
 use validator::{ValidateArgs, ValidationErrorsKind};
 
 pub async fn get_goals(
     Extension(user_context): Extension<Option<UserContext>>,
-    jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
@@ -69,21 +68,16 @@ pub async fn hx_get_goals_table(
     Ok(Html(rendered).into_response())
 }
 
-pub async fn hx_get_new_goal(
-    jar: PrivateCookieJar,
-    State(state): State<AppState>,
-    State(tera): State<tera::Tera>,
-) -> Result<Response, WebappError> {
+pub async fn hx_get_new_goal(State(tera): State<tera::Tera>) -> Result<Response, WebappError> {
     let context = tera::Context::new();
     let rendered = tera.render("fragments/goal-form.html", &context)?;
 
-    return Ok(Html(rendered).into_response());
+    Ok(Html(rendered).into_response())
 }
 
 pub async fn hx_post_new_goal(
     jar: PrivateCookieJar,
     State(state): State<AppState>,
-    State(tera): State<tera::Tera>,
     Form(goal_form): Form<GoalForm>,
 ) -> Result<Response, WebappError> {
     let username = match jar.get("username") {
@@ -129,8 +123,8 @@ fn validate_goal_form_extract_alert<'a>(
 ) -> Option<String> {
     // validate form, see GoalForm impl
     let validation_result = goal_form.validate_with_args(context);
-    let validation_error_messages = validation_result.err().and_then(|errors| {
-        let es = errors
+    let validation_error_messages = validation_result.err().map(|errors| {
+        errors
             .0 // inner HashMap
             .into_iter()
             .filter_map(|(_k, v)| match v {
@@ -141,13 +135,13 @@ fn validate_goal_form_extract_alert<'a>(
             .flatten() // because fields can have multiple errors
             .filter_map(|validation_error| validation_error.message)
             .map(|message| message.to_string())
-            .collect::<Vec<_>>();
-        Some(es)
+            .collect::<Vec<_>>()
     });
 
     // if errors, pull out messages and return as bullet list fragment
-    let alert = validation_error_messages.and_then(|messages| {
-        let alert = formatdoc!(
+
+    validation_error_messages.map(|messages| {
+        formatdoc!(
             "
             <div id='alert'
                 hx-swap-oob='true'
@@ -163,10 +157,8 @@ fn validate_goal_form_extract_alert<'a>(
                 .map(|x| format!("<li>{x}</li>"))
                 .collect::<Vec<_>>()
                 .join("")
-        );
-        Some(alert)
-    });
-    alert
+        )
+    })
 }
 
 pub async fn hx_get_goal(
@@ -174,7 +166,6 @@ pub async fn hx_get_goal(
     Path(id): Path<i32>,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
-    jar: PrivateCookieJar,
 ) -> Result<Response, WebappError> {
     debug!("getting goal with id {}", id);
 
@@ -205,8 +196,6 @@ pub async fn hx_delete_goal(
     Extension(user_context): Extension<Option<UserContext>>,
     Path(id): Path<i32>,
     State(state): State<AppState>,
-    State(tera): State<tera::Tera>,
-    jar: PrivateCookieJar,
 ) -> Result<Response, WebappError> {
     debug!("getting goal with id {}", id);
     let Some(user_context) = user_context else {
@@ -242,10 +231,8 @@ pub async fn hx_delete_goal(
 pub async fn hx_get_edit_goal(
     Extension(user_context): Extension<Option<UserContext>>,
     Path(id): Path<i32>,
-    jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
-    HxRequest(hx_request): HxRequest,
 ) -> Result<Response, WebappError> {
     let Some(user_context) = user_context else {
         return Err(WebappError::NotLoggedInError);
@@ -271,9 +258,7 @@ pub async fn hx_get_edit_goal(
 pub async fn hx_patch_goal(
     Extension(user_context): Extension<Option<UserContext>>,
     Path(id): Path<i32>,
-    jar: PrivateCookieJar,
     State(state): State<AppState>,
-    State(tera): State<tera::Tera>,
     Form(goal_form): Form<GoalForm>,
 ) -> Result<Response, WebappError> {
     let Some(user_context) = user_context else {
