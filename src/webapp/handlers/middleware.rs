@@ -8,12 +8,13 @@ use axum::{
 };
 use axum_extra::extract::PrivateCookieJar;
 use axum_htmx::{HxRedirect, HxRequest};
+use serde::Serialize;
 use tracing::debug;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct UserContext {
-    username: String,
-    user_id: i32,
+    pub username: String,
+    pub user_id: i32,
 }
 
 // ensures user_context

@@ -1,11 +1,13 @@
 use crate::db::models::user::{get_user_by_username, verify_password};
 use axum::{
+    Extension,
     extract::{Form, Query, State},
     http::HeaderMap,
     middleware::Next,
     response::{Html, IntoResponse, Redirect, Response},
 };
 use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
+use middleware::UserContext;
 use serde::Deserialize;
 use std::str::FromStr;
 use tracing::debug;
@@ -25,12 +27,12 @@ pub struct Params {
 }
 
 pub async fn get_login(
-    params: Query<Params>,
+    Extension(user_context): Extension<Option<UserContext>>,
     jar: PrivateCookieJar,
     State(state): State<AppState>,
 ) -> Result<(PrivateCookieJar, Response), WebappError> {
     // you only get here if you manually go to url, so we don't worry about query params / next
-    if let Some(_username) = jar.get("username") {
+    if user_context.is_some() {
         return Ok((jar, Redirect::to("/").into_response()));
     }
 
@@ -127,14 +129,14 @@ pub async fn get_logout(
 }
 
 pub async fn get_index(
+    Extension(user_context): Extension<Option<UserContext>>,
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
 ) -> Result<Html<String>, WebappError> {
     let mut context = tera::Context::new();
 
-    if let Some(username) = jar.get("username") {
-        debug!("logged in user: {:#?}", username);
-        context.insert("user", &username.to_string())
+    if let Some(user_context) = user_context {
+        context.insert("user_context", &user_context)
     }
 
     context.insert("content", "Home Content");

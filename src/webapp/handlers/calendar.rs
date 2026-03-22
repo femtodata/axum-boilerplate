@@ -1,3 +1,4 @@
+use axum::Extension;
 use axum::extract::{Path, Query};
 use axum::response::{Html, IntoResponse};
 use chrono::{DateTime, Datelike, Days, Months, NaiveDate, Utc, Weekday};
@@ -7,6 +8,7 @@ use tracing::debug;
 use crate::webapp::handlers::calendar;
 
 use super::super::WebappError;
+use super::middleware::UserContext;
 
 use axum::response::Response;
 
@@ -15,15 +17,16 @@ use axum::extract::State;
 use axum_extra::extract::PrivateCookieJar;
 
 pub async fn get_calendar_month(
+    Extension(user_context): Extension<Option<UserContext>>,
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
     let mut context = tera::Context::new();
 
-    if let Some(user) = jar.get("user") {
-        debug!("logged in user: {:#?}", user);
-        context.insert("user", &user.to_string())
-    }
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
+    };
+    context.insert("user_context", &user_context);
     context.insert("fixedHeight", &true);
 
     let rendered = tera.render("calendar.html", &context)?;
@@ -32,15 +35,17 @@ pub async fn get_calendar_month(
 }
 
 pub async fn get_calendar_month_ymd(
+    Extension(user_context): Extension<Option<UserContext>>,
     Path(CalendarParams { year, month, day }): Path<CalendarParams>,
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
     let mut context = tera::Context::new();
 
-    if let Some(user) = jar.get("user") {
-        debug!("logged in user: {:#?}", user);
-        context.insert("user", &user.to_string())
+    if let Some(user_context) = user_context {
+        context.insert("user_context", &user_context)
+    } else {
+        return Err(WebappError::NotLoggedInError);
     }
 
     let calendar_params = CalendarParams { year, month, day };
@@ -53,11 +58,19 @@ pub async fn get_calendar_month_ymd(
 }
 
 pub async fn hx_get_calendar_month_content(
+    Extension(user_context): Extension<Option<UserContext>>,
     jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
     Query(calendar_params): Query<CalendarParams>,
     // Json(payload): Json<UserDate>,
 ) -> Result<Response, WebappError> {
+    let mut context = tera::Context::new();
+
+    if let Some(user_context) = user_context {
+        context.insert("user_context", &user_context)
+    } else {
+        return Err(WebappError::NotLoggedInError);
+    }
     debug!("{:#?}", calendar_params);
 
     let date = NaiveDate::from_ymd_opt(
@@ -108,7 +121,6 @@ pub async fn hx_get_calendar_month_content(
 
     let days_of_week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    let mut context = tera::Context::new();
     context.insert("weeks", &weeks_vec);
     context.insert("days_of_week", &days_of_week);
 

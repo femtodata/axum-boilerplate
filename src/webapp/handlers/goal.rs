@@ -1,4 +1,7 @@
-use super::super::{WebappError, state::AppState};
+use super::{
+    super::{WebappError, state::AppState},
+    middleware::UserContext,
+};
 use crate::db::{
     models::{
         Goal, NewGoal, User,
@@ -7,6 +10,7 @@ use crate::db::{
     schema::{goals, users},
 };
 use axum::{
+    Extension,
     extract::{Form, Path, State},
     response::{Html, IntoResponse, Response},
 };
@@ -18,37 +22,29 @@ use tracing::{debug, info};
 use validator::{ValidateArgs, ValidationErrorsKind};
 
 pub async fn get_goals(
+    Extension(user_context): Extension<Option<UserContext>>,
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
     let mut context = tera::Context::new();
-    let rendered = render_goals(jar, state, tera, &mut context)?;
-
-    Ok(Html(rendered).into_response())
-}
-
-fn render_goals(
-    jar: PrivateCookieJar,
-    state: AppState,
-    tera: tera::Tera,
-    context: &mut tera::Context,
-) -> Result<String, WebappError> {
-    let username = match jar.get("username") {
-        Some(username) => username.value().to_string(),
-        None => return Err(WebappError::NotLoggedInError),
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
     };
+    context.insert("user_context", &user_context);
+
     let mut conn = state.pool.clone().get()?;
-    let user = users::table
-        .filter(users::username.eq(&username))
-        .first::<User>(&mut conn)?;
-    let goals = Goal::belonging_to(&user).load::<Goal>(&mut conn)?;
-    context.insert("user", &username);
-    context.insert("title", "axum-boilerplate | Goals");
+    let goals = goals::table
+        .select(Goal::as_select())
+        .filter(goals::user_id.eq(user_context.user_id))
+        .load(&mut conn)?;
+
     context.insert("goals", &goals);
+    context.insert("title", "axum-boilerplate | Goals");
     context.insert("active", "goals");
     let rendered = tera.render("goals.html", &context)?;
-    Ok(rendered)
+
+    Ok(Html(rendered).into_response())
 }
 
 pub async fn hx_get_goals_table(
@@ -174,27 +170,31 @@ fn validate_goal_form_extract_alert<'a>(
 }
 
 pub async fn hx_get_goal(
+    Extension(user_context): Extension<Option<UserContext>>,
     Path(id): Path<i32>,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     jar: PrivateCookieJar,
 ) -> Result<Response, WebappError> {
     debug!("getting goal with id {}", id);
-    let username = match jar.get("user") {
-        Some(user) => user.value().to_string(),
-        None => return Err(WebappError::NotLoggedInError),
+
+    let mut context = tera::Context::new();
+
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
     };
+
     let mut conn = state.pool.clone().get()?;
-    let user = users::table
-        .filter(users::username.eq(&username))
-        .first::<User>(&mut conn)?;
 
     let goal = goals::table
-        .filter(goals::user_id.eq(user.id).and(goals::id.eq(id)))
+        .filter(
+            goals::user_id
+                .eq(user_context.user_id)
+                .and(goals::id.eq(id)),
+        )
         .first::<Goal>(&mut conn)?;
     debug!("goal: {:#?}", goal);
 
-    let mut context = tera::Context::new();
     context.insert("goal", &goal);
     let rendered = tera.render("fragments/goal-detail.html", &context)?;
 
@@ -202,23 +202,26 @@ pub async fn hx_get_goal(
 }
 
 pub async fn hx_delete_goal(
+    Extension(user_context): Extension<Option<UserContext>>,
     Path(id): Path<i32>,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     jar: PrivateCookieJar,
 ) -> Result<Response, WebappError> {
     debug!("getting goal with id {}", id);
-    let username = match jar.get("user") {
-        Some(user) => user.value().to_string(),
-        None => return Err(WebappError::NotLoggedInError),
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
     };
     let mut conn = state.pool.clone().get()?;
-    let user = users::table
-        .filter(users::username.eq(&username))
-        .first::<User>(&mut conn)?;
 
-    let res = diesel::delete(goals::table.filter(goals::id.eq(id).and(goals::user_id.eq(user.id))))
-        .execute(&mut conn)?;
+    let res = diesel::delete(
+        goals::table.filter(
+            goals::id
+                .eq(id)
+                .and(goals::user_id.eq(user_context.user_id)),
+        ),
+    )
+    .execute(&mut conn)?;
 
     if res == 0 {
         return Err(WebappError::DieselResultError(
@@ -237,23 +240,24 @@ pub async fn hx_delete_goal(
 }
 
 pub async fn hx_get_edit_goal(
+    Extension(user_context): Extension<Option<UserContext>>,
     Path(id): Path<i32>,
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     HxRequest(hx_request): HxRequest,
 ) -> Result<Response, WebappError> {
-    let username = match jar.get("user") {
-        Some(user) => user.value().to_string(),
-        None => return Err(WebappError::NotLoggedInError),
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
     };
     let mut conn = state.pool.clone().get()?;
-    let user = users::table
-        .filter(users::username.eq(&username))
-        .first::<User>(&mut conn)?;
 
     let goal = goals::table
-        .filter(goals::id.eq(id).and(goals::user_id.eq(user.id)))
+        .filter(
+            goals::id
+                .eq(id)
+                .and(goals::user_id.eq(user_context.user_id)),
+        )
         .first::<Goal>(&mut conn)?;
 
     let mut context = tera::Context::new();
@@ -261,26 +265,27 @@ pub async fn hx_get_edit_goal(
     context.insert("edit", &true);
     let rendered = tera.render("fragments/goal-form.html", &context)?;
 
-    return Ok(Html(rendered).into_response());
+    Ok(Html(rendered).into_response())
 }
 
 pub async fn hx_patch_goal(
+    Extension(user_context): Extension<Option<UserContext>>,
     Path(id): Path<i32>,
     jar: PrivateCookieJar,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     Form(goal_form): Form<GoalForm>,
 ) -> Result<Response, WebappError> {
-    let username = match jar.get("user") {
-        Some(user) => user.value().to_string(),
-        None => return Err(WebappError::NotLoggedInError),
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
     };
     let mut conn = state.pool.clone().get()?;
-    let user = users::table
-        .filter(users::username.eq(&username))
-        .first::<User>(&mut conn)?;
     let goal = goals::table
-        .filter(goals::user_id.eq(user.id).and(goals::id.eq(id)))
+        .filter(
+            goals::user_id
+                .eq(user_context.user_id)
+                .and(goals::id.eq(id)),
+        )
         .first::<Goal>(&mut conn)?;
     debug!("goal: {:#?}", goal);
 

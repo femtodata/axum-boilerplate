@@ -11,7 +11,7 @@
           active
           {% endif %}
           ">Home</a>
-        {% if user %}
+        {% if user_context %}
           <a href="/goals" class="nav-item nav-link
             {% if active and active == "goals" %}
             active
@@ -24,7 +24,7 @@
           ">Calendar</a>
         {% endif %}
       </div>
-      {% if user %}
+      {% if user_context %}
         <div class="navbar-nav ms-auto">
           <a href="/logout" class="nav-item nav-link">Logout</a>
         </div>
