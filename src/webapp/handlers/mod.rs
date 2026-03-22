@@ -1,16 +1,14 @@
 use crate::db::models::user::{get_user_by_username, verify_password};
 use axum::{
     Extension,
-    extract::{Form, Query, State},
+    extract::{Form, State},
     http::HeaderMap,
-    middleware::Next,
     response::{Html, IntoResponse, Redirect, Response},
 };
 use axum_extra::extract::{PrivateCookieJar, cookie::Cookie};
 use middleware::UserContext;
 use serde::Deserialize;
 use std::str::FromStr;
-use tracing::debug;
 use url::Url;
 use validator::{Validate, ValidationErrorsKind};
 
@@ -19,12 +17,6 @@ pub mod goal;
 pub mod middleware;
 
 use super::{WebappError, state::AppState};
-
-#[derive(Debug, Deserialize)]
-pub struct Params {
-    next_url: Option<String>,
-    alert: Option<bool>,
-}
 
 pub async fn get_login(
     Extension(user_context): Extension<Option<UserContext>>,
@@ -130,7 +122,6 @@ pub async fn get_logout(
 
 pub async fn get_index(
     Extension(user_context): Extension<Option<UserContext>>,
-    jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
 ) -> Result<Html<String>, WebappError> {
     let mut context = tera::Context::new();

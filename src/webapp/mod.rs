@@ -16,8 +16,7 @@ use tera::Tera;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
-use tracing::{Level, Span, error, event, info};
-use tracing_subscriber::EnvFilter;
+use tracing::{Level, Span, error, info};
 
 mod handlers;
 mod sso;

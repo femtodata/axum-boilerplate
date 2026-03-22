@@ -1,11 +1,9 @@
 use axum::Extension;
 use axum::extract::{Path, Query};
 use axum::response::{Html, IntoResponse};
-use chrono::{DateTime, Datelike, Days, Months, NaiveDate, Utc, Weekday};
+use chrono::{Datelike, Days, Months, NaiveDate, Weekday};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
-
-use crate::webapp::handlers::calendar;
 
 use super::super::WebappError;
 use super::middleware::UserContext;
@@ -14,11 +12,8 @@ use axum::response::Response;
 
 use axum::extract::State;
 
-use axum_extra::extract::PrivateCookieJar;
-
 pub async fn get_calendar_month(
     Extension(user_context): Extension<Option<UserContext>>,
-    jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
     let mut context = tera::Context::new();
@@ -37,7 +32,6 @@ pub async fn get_calendar_month(
 pub async fn get_calendar_month_ymd(
     Extension(user_context): Extension<Option<UserContext>>,
     Path(CalendarParams { year, month, day }): Path<CalendarParams>,
-    jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
     let mut context = tera::Context::new();
@@ -59,7 +53,6 @@ pub async fn get_calendar_month_ymd(
 
 pub async fn hx_get_calendar_month_content(
     Extension(user_context): Extension<Option<UserContext>>,
-    jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
     Query(calendar_params): Query<CalendarParams>,
     // Json(payload): Json<UserDate>,
@@ -182,7 +175,6 @@ impl CalendarDay {
 }
 
 pub async fn hx_get_calendar_week_content(
-    jar: PrivateCookieJar,
     State(tera): State<tera::Tera>,
     Query(calendar_params): Query<CalendarParams>,
     // Json(payload): Json<UserDate>,

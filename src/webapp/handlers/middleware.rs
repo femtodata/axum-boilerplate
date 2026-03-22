@@ -9,7 +9,6 @@ use axum::{
 use axum_extra::extract::PrivateCookieJar;
 use axum_htmx::{HxRedirect, HxRequest};
 use serde::Serialize;
-use tracing::debug;
 
 #[derive(Clone, Serialize)]
 pub struct UserContext {
@@ -20,7 +19,6 @@ pub struct UserContext {
 // ensures user_context
 pub async fn base_middleware(
     jar: PrivateCookieJar,
-    HxRequest(hx_request): HxRequest,
     mut request: Request,
     next: Next,
 ) -> Result<Response, WebappError> {
@@ -43,12 +41,11 @@ pub async fn base_middleware(
 // to be used as middleware
 pub async fn auth_middleware(
     Extension(user_context): Extension<Option<UserContext>>,
-    jar: PrivateCookieJar,
     HxRequest(hx_request): HxRequest,
     mut request: Request,
     next: Next,
 ) -> Result<Response, WebappError> {
-    if let Some(user_context) = user_context {
+    if user_context.is_some() {
         Ok(next.run(request).await)
     } else {
         let redirect_url = "/login?next_url=".to_string() + request.uri().to_string().as_str();
