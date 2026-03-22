@@ -176,6 +176,10 @@ pub async fn run_server() {
         .merge(sso::sso_router())
         .layer(
             ServiceBuilder::new()
+                .layer(middleware::from_fn_with_state(
+                    app_state.clone(),
+                    handlers::middleware::base_middleware,
+                ))
                 .layer(TraceLayer::new_for_http().on_failure(
                     |error: ServerErrorsFailureClass, latency: Duration, _span: &Span| {
                         tracing::event!(Level::ERROR, "an error has occurred: {error:#?}")
