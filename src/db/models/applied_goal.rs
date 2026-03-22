@@ -62,7 +62,7 @@ pub fn get_applied_goals_for_dates(
     start_date: NaiveDate,
     end_date: NaiveDate,
     conn: &mut PgConnection,
-) -> Result<Vec<Vec<AppliedGoal>>, diesel::result::Error> {
+) -> Result<HashMap<Goal, HashMap<NaiveDate, AppliedGoal>>, diesel::result::Error> {
     let goals: Vec<Goal> = match goal_id {
         Some(goal_id) => vec![goals::table.find(goal_id).first(conn)?],
         None => goals::table
@@ -77,9 +77,15 @@ pub fn get_applied_goals_for_dates(
         .load(conn)?
         .grouped_by(&goals);
 
+    let applied_goals = goals.into_iter().zip(applied_goals).collect::<Vec<_>>();
+
     let mut return_val: HashMap<Goal, HashMap<NaiveDate, AppliedGoal>> = HashMap::new();
 
-    Ok(applied_goals)
+    for (goal, ag_vec) in applied_goals.into_iter() {
+        todo!();
+    }
+
+    Ok(return_val)
 }
 
 pub fn create_applied_goals_for_dates(
