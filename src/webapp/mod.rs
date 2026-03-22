@@ -91,6 +91,9 @@ pub enum WebappError {
     #[error("Could not create a date with {}, {}, {}", .calendar_params.year, .calendar_params.month, .calendar_params.day)]
     DateCreationError { calendar_params: CalendarParams },
 
+    #[error("user_id unparsable")]
+    UserIDParseError,
+
     #[error("Test error")]
     TestError,
     // #[error(transparent)]

@@ -9,25 +9,38 @@ use axum_extra::extract::PrivateCookieJar;
 use axum_htmx::{HxRedirect, HxRequest};
 use tracing::debug;
 
+#[derive(Clone)]
+pub struct UserContext {
+    username: String,
+    user_id: i32,
+}
+
 // to be used as middleware
 pub async fn auth_middleware(
     jar: PrivateCookieJar,
     HxRequest(hx_request): HxRequest,
-    request: Request,
+    mut request: Request,
     next: Next,
 ) -> Result<Response, WebappError> {
-    if let Some(username) = jar.get("username") {
-        debug!("logged in user: {}", username);
+    if let Some(username_cookie) = jar.get("username")
+        && let Some(user_id_cookie) = jar.get("user_id")
+    {
+        let Ok(user_id) = user_id_cookie.value().parse::<i32>() else {
+            return Err(WebappError::UserIDParseError);
+        };
+        let user_context = UserContext {
+            username: username_cookie.value().to_string(),
+            user_id,
+        };
+        request.extensions_mut().insert(user_context);
+        Ok(next.run(request).await)
     } else {
         let redirect_url = "/login?next_url=".to_string() + request.uri().to_string().as_str();
         if hx_request {
             return Ok((HxRedirect(redirect_url), "").into_response());
         }
-        return Ok((StatusCode::FOUND, Redirect::to(redirect_url.as_str())).into_response());
+        Ok((StatusCode::FOUND, Redirect::to(redirect_url.as_str())).into_response())
     }
-    let response = next.run(request).await;
-
-    Ok(response)
 }
 
 // to be used with middleware::from_fn_with_state
