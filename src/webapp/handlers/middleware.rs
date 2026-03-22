@@ -42,7 +42,7 @@ pub async fn base_middleware(
 pub async fn auth_middleware(
     Extension(user_context): Extension<Option<UserContext>>,
     HxRequest(hx_request): HxRequest,
-    mut request: Request,
+    request: Request,
     next: Next,
 ) -> Result<Response, WebappError> {
     if user_context.is_some() {
@@ -73,7 +73,7 @@ pub async fn error_middleware(
             return Ok((status_code, HxRedirect("/error".to_string()), "").into_response());
         }
 
-        return Ok(Redirect::to("/error").into_response());
+        Ok(Redirect::to("/error").into_response())
     } else {
         Ok(response)
     }
