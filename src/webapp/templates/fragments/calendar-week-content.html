@@ -141,20 +141,29 @@
           {% set goal = week_goal.goal %}
           {% set days = week_goal.days %}
             
-          <div> {{ goal.description }}</div>
+          <div class="border-start border-bottom">
+            {{ goal.description }}
+          </div>
 
           {% for day in days %}
-            {% if day.applied_goal %}
-              <div>
+            <div 
+              class="border-start border-bottom
+                {% if loop.last %}
+                  border-end
+                {% endif %}
+              "
+              style="
+                text-align: center;
+              "
+            >
+              {% if day.applied_goal %}
                 <span style="color: #ffce12;">
                   {% for i in range(end=day.applied_goal.points_possible) %}
                     <i class="bi bi-star"></i>
                   {% endfor %}
                 </span>
-              </div>
-            {% else %}
-              <div>none</div>
-            {% endif %}
+              {% endif %}
+            </div>
 
           {% endfor %}
 
