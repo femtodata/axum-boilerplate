@@ -105,8 +105,8 @@ pub enum WebappError {
 
 impl IntoResponse for WebappError {
     fn into_response(self) -> axum::response::Response {
-        error!("WebappError: {}", self);
-        (StatusCode::INTERNAL_SERVER_ERROR, format!("{:#?}", self)).into_response()
+        error!("WebappError: {:#?}", self);
+        StatusCode::INTERNAL_SERVER_ERROR.into_response()
     }
 }
 
