@@ -141,7 +141,7 @@
           {% set goal = week_goal.goal %}
           {% set days = week_goal.days %}
             
-          <div> {{ goal.title }}</div>
+          <div> {{ goal.description }}</div>
 
           {% for day in days %}
             {% if day.applied_goal %}

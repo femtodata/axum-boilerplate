@@ -175,6 +175,47 @@ impl CalendarDay {
     }
 }
 
+pub async fn get_calendar_week(
+    Extension(user_context): Extension<Option<UserContext>>,
+    State(tera): State<tera::Tera>,
+) -> Result<Response, WebappError> {
+    let mut context = tera::Context::new();
+
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
+    };
+    context.insert("user_context", &user_context);
+    context.insert("fixedHeight", &true);
+    context.insert("week", &true);
+
+    let rendered = tera.render("calendar.html", &context)?;
+
+    Ok(Html(rendered).into_response())
+}
+
+pub async fn get_calendar_week_ymd(
+    Extension(user_context): Extension<Option<UserContext>>,
+    Path(CalendarParams { year, month, day }): Path<CalendarParams>,
+    State(tera): State<tera::Tera>,
+) -> Result<Response, WebappError> {
+    let mut context = tera::Context::new();
+
+    if let Some(user_context) = user_context {
+        context.insert("user_context", &user_context)
+    } else {
+        return Err(WebappError::NotLoggedInError);
+    }
+
+    let calendar_params = CalendarParams { year, month, day };
+    context.insert("fixedHeight", &true);
+    context.insert("calendar_params", &calendar_params);
+    context.insert("week", &true);
+
+    let rendered = tera.render("calendar.html", &context)?;
+
+    Ok(Html(rendered).into_response())
+}
+
 pub async fn hx_get_calendar_week_content(
     Extension(user_context): Extension<Option<UserContext>>,
     State(state): State<AppState>,

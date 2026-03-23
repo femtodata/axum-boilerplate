@@ -11,7 +11,11 @@
     style="
       height: 100%;
     "
-    hx-get="/calendar/month/content"
+    {% if week %}
+      hx-get="/calendar/week/content"
+    {% else %}
+      hx-get="/calendar/month/content"
+    {% endif %}
     {% if calendar_params %}
       hx-vals='{
         "year": {{ calendar_params["year"] }},
