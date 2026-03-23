@@ -74,8 +74,6 @@ pub fn get_applied_goals_for_dates(
             .load(conn)?,
     };
 
-    println!("user goals: {:#?}", &goals);
-
     let applied_goals = AppliedGoal::belonging_to(&goals)
         .select(AppliedGoal::as_select())
         .filter(applied_goals::date.between(start_date, end_date))
