@@ -145,7 +145,13 @@
 
           {% for day in days %}
             {% if day.applied_goal %}
-              <div>applied_goal</div>
+              <div>
+                <span style="color: #ffce12;">
+                  {% for i in range(end=day.applied_goal.points_possible) %}
+                    <i class="bi bi-star"></i>
+                  {% endfor %}
+                </span>
+              </div>
             {% else %}
               <div>none</div>
             {% endif %}
