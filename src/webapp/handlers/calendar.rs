@@ -5,6 +5,9 @@ use chrono::{Datelike, Days, Months, NaiveDate, Weekday};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 
+use crate::db::models::applied_goal::get_applied_goals_for_dates;
+use crate::webapp::state::AppState;
+
 use super::super::WebappError;
 use super::middleware::UserContext;
 
@@ -173,6 +176,7 @@ impl CalendarDay {
 
 pub async fn hx_get_calendar_week_content(
     Extension(user_context): Extension<Option<UserContext>>,
+    State(state): State<AppState>,
     State(tera): State<tera::Tera>,
     Query(calendar_params): Query<CalendarParams>,
     // Json(payload): Json<UserDate>,
@@ -198,18 +202,33 @@ pub async fn hx_get_calendar_week_content(
         .checked_last_day()
         .ok_or(WebappError::UnreachableDateError)?;
 
-    let days_vec = start_date
-        .iter_days()
-        .take(7)
-        .map(CalendarDay::new)
-        .collect::<Vec<CalendarDay>>();
-
-    let days_of_week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    // start layering the cake!
+    let dates = start_date.iter_days().take(7).collect::<Vec<NaiveDate>>();
 
     let mut context = tera::Context::new();
 
-    context.insert("days", &days_vec);
+    let days_of_week = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     context.insert("days_of_week", &days_of_week);
+
+    let days_vec = dates
+        .iter()
+        .map(|date| CalendarDay::new(*date))
+        .collect::<Vec<CalendarDay>>();
+
+    context.insert("days", &days_vec);
+
+    let mut conn = state.pool.clone().get()?;
+
+    let applied_goal_map =
+        get_applied_goals_for_dates(user_context.user_id, None, start_date, end_date, &mut conn)?;
+
+    // we use weeks as the basic unit, instead of days in the month view:
+    for (goal, date_map) in applied_goal_map.into_iter() {
+        dates.iter().map(|date| match date_map.get(date) {
+            Some(applied_goal) => todo!(),
+            None => todo!(),
+        });
+    }
 
     let month_str = if start_date.month0() == end_date.month0() {
         date.format("%B %Y").to_string()

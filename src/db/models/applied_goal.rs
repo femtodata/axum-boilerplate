@@ -84,7 +84,10 @@ pub fn get_applied_goals_for_dates(
 
     let mut applied_goal_map: HashMap<Goal, HashMap<NaiveDate, AppliedGoal>> = HashMap::new();
 
-    for (goal, ag_vec) in applied_goals.into_iter() {
+    for (goal, ag_vec) in applied_goals
+        .into_iter()
+        .filter(|(_, ag_vec)| !ag_vec.is_empty())
+    {
         let date_map: HashMap<NaiveDate, AppliedGoal> = HashMap::from_iter(
             ag_vec
                 .into_iter()
