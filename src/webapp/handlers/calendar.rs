@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use tracing::debug;
 
 use crate::db::models::applied_goal::get_applied_goals_for_dates;
+use crate::db::models::{AppliedGoal, Goal};
 use crate::webapp::state::AppState;
 
 use super::super::WebappError;
@@ -223,12 +224,20 @@ pub async fn hx_get_calendar_week_content(
         get_applied_goals_for_dates(user_context.user_id, None, start_date, end_date, &mut conn)?;
 
     // we use weeks as the basic unit, instead of days in the month view:
-    for (goal, date_map) in applied_goal_map.into_iter() {
-        dates.iter().map(|date| match date_map.get(date) {
-            Some(applied_goal) => todo!(),
-            None => todo!(),
-        });
-    }
+    let goal_vec = applied_goal_map
+        .into_iter()
+        .map(|(goal, mut date_map)| {
+            let days = dates
+                .iter()
+                .map(|date| CalendarWeekDay {
+                    applied_goal: date_map.remove(date),
+                })
+                .collect::<Vec<CalendarWeekDay>>();
+            CalendarWeekGoal { goal, days }
+        })
+        .collect::<Vec<CalendarWeekGoal>>();
+
+    context.insert("goals", &goal_vec);
 
     let month_str = if start_date.month0() == end_date.month0() {
         date.format("%B %Y").to_string()
@@ -265,6 +274,17 @@ pub async fn hx_get_calendar_week_content(
 
     let rendered = tera.render("fragments/calendar-week-content.html", &context)?;
     Ok(Html(rendered).into_response())
+}
+
+#[derive(Serialize)]
+struct CalendarWeekGoal {
+    goal: Goal,
+    days: Vec<CalendarWeekDay>,
+}
+
+#[derive(Serialize)]
+struct CalendarWeekDay {
+    applied_goal: Option<AppliedGoal>,
 }
 
 #[cfg(test)]

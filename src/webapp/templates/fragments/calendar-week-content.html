@@ -136,6 +136,24 @@
             {{ day.display_str }}
           </div>
         {% endfor %}
+
+        {% for week_goal in goals %}
+          {% set goal = week_goal.goal %}
+          {% set days = week_goal.days %}
+            
+          <div> {{ goal.title }}</div>
+
+          {% for day in days %}
+            {% if day.applied_goal %}
+              <div>applied_goal</div>
+            {% else %}
+              <div>none</div>
+            {% endif %}
+
+          {% endfor %}
+
+        {% endfor %}
+
       </div>
     </div>
   </div>
