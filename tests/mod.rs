@@ -65,19 +65,19 @@ fn test_db_ops() {
     run_migrations(&mut conn);
 
     let user = test_user(&mut conn);
-    let goal = test_goal(&mut conn, &user);
-    test_user_goal(&mut conn, &user, &goal);
-    let new_goal = test_goal_form(&mut conn, &user);
+    let goal1 = test_goal(&mut conn, &user);
+    test_user_goal(&mut conn, &user, &goal1);
+    let goal2 = test_goal_form(&mut conn, &user);
 
     let applied_goal = test_applied_goal(
         &mut conn,
-        &goal,
+        &goal2,
         NaiveDate::from_ymd_opt(2026, 3, 1).unwrap(),
     );
 
-    test_applied_goal_relation(&mut conn, &applied_goal, &goal, &user);
+    test_applied_goal_relation(&mut conn, &applied_goal, &goal2, &user);
 
-    test_get_applied_goals(conn, user, goal, applied_goal);
+    test_get_applied_goals(&mut conn, &user, &goal1, &goal2, applied_goal.clone());
 }
 
 fn test_user(conn: &mut diesel::PgConnection) -> User {
@@ -200,9 +200,10 @@ fn test_applied_goal_relation(
 }
 
 fn test_get_applied_goals(
-    mut conn: PgConnection,
-    user: User,
-    goal: Goal,
+    conn: &mut PgConnection,
+    user: &User,
+    goal1: &Goal,
+    goal2: &Goal,
     applied_goal: AppliedGoal,
 ) {
     let mut applied_goals = vec![applied_goal];
@@ -212,8 +213,8 @@ fn test_get_applied_goals(
         NaiveDate::from_ymd_opt(2026, 3, 4).unwrap(),
         NaiveDate::from_ymd_opt(2026, 4, 4).unwrap(),
     ] {
-        let new_applied_goal = get_applied_goal(goal.id, date, 5);
-        let applied_goal = create_new_applied_goal(&new_applied_goal, &mut conn)
+        let new_applied_goal = get_applied_goal(goal2.id, date, 5);
+        let applied_goal = create_new_applied_goal(&new_applied_goal, conn)
             .unwrap_or_else(|err| panic!("error create new applied_goal: {err}"));
 
         applied_goals.push(applied_goal);
@@ -221,10 +222,10 @@ fn test_get_applied_goals(
 
     let returned_applied_goals = get_applied_goals_for_dates(
         user.id,
-        Some(goal.id),
+        None,
         NaiveDate::from_ymd_opt(2026, 3, 1).unwrap(),
         NaiveDate::from_ymd_opt(2026, 3, 4).unwrap(),
-        &mut conn,
+        conn,
     )
     .unwrap_or_else(|err| panic!("error getting applied goals for dates: {err}"));
 

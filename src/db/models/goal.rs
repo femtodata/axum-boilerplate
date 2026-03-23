@@ -8,6 +8,8 @@ use validator::{Validate, ValidationError};
 
 #[derive(
     Debug,
+    Eq,
+    Hash,
     PartialEq,
     Serialize,
     Deserialize,
