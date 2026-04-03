@@ -256,7 +256,7 @@ pub async fn hx_get_calendar_week_content(
     let dates = start_date.iter_days().take(7).collect::<Vec<NaiveDate>>();
 
     let mut context = tera::Context::new();
-    //
+
     // start_date is used for toggling between months and weeks
     let start_date_params = CalendarParams {
         year: start_date.year(),
