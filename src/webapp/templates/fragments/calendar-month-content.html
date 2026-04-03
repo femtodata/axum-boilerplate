@@ -74,9 +74,12 @@
           hx-vals='js:{...function() {
             var today = new Date();
             var date_params = {
-              "year": today.getFullYear(),
-              "month": today.getMonth() + 1,
-              "day": today.getDate()
+              // "year": today.getFullYear(),
+              // "month": today.getMonth() + 1,
+              // "day": today.getDate()
+              "year": {{ start_date.year }},
+              "month": {{ start_date.month }},
+              "day": {{ start_date.day }}
             };
             return date_params;
           }()}'
