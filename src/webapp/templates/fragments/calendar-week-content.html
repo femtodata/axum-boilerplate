@@ -27,6 +27,7 @@
             "month": {{ prev_week_params["month"] }},
             "day": {{ prev_week_params["day"] }}
           }'
+          hx-trigger='click, keyup[key=="ArrowLeft"] from:body'
           hx-target='#calendar-content'
           hx-push-url='/calendar/week/{{ prev_week_params["year"] }}/{{ prev_week_params["month"] }}/{{ prev_week_params["day"] }}'
           style="
@@ -45,6 +46,7 @@
             "month": {{ next_week_params["month"] }},
             "day": {{ next_week_params["day"] }}
           }'
+          hx-trigger='click, keyup[key=="ArrowRight"] from:body'
           hx-target='#calendar-content'
           hx-push-url='/calendar/week/{{ next_week_params["year"] }}/{{ next_week_params["month"] }}/{{ next_week_params["day"] }}'
           style="
@@ -179,7 +181,8 @@
           style="
             font-size: 1em;
           "
-        >New Goal</button>
+          hx-get="/calendar/applied-goal/week"
+        >New Weekly Goal</button>
       </div>
     </div>
   </div>
