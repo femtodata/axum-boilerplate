@@ -16,7 +16,7 @@ pub struct UserContext {
     pub user_id: i32,
 }
 
-// ensures user_context
+/// Inserts user_context extension into request
 pub async fn base_middleware(
     jar: PrivateCookieJar,
     mut request: Request,
@@ -38,7 +38,7 @@ pub async fn base_middleware(
     Ok(next.run(request).await)
 }
 
-// to be used as middleware
+/// Checks user_context extension, redirects to login if None
 pub async fn auth_middleware(
     Extension(user_context): Extension<Option<UserContext>>,
     HxRequest(hx_request): HxRequest,
@@ -56,7 +56,7 @@ pub async fn auth_middleware(
     }
 }
 
-// to be used with middleware::from_fn_with_state
+/// Prints error, display error page for user
 pub async fn error_middleware(
     HxRequest(hx_request): HxRequest,
     request: Request,
