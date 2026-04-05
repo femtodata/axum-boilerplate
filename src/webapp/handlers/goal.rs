@@ -47,19 +47,18 @@ pub async fn get_goals(
 }
 
 pub async fn hx_get_goals_table(
-    jar: PrivateCookieJar,
+    Extension(user_context): Extension<Option<UserContext>>,
     State(state): State<AppState>,
     State(tera): State<tera::Tera>,
 ) -> Result<Response, WebappError> {
-    let username = match jar.get("username") {
-        Some(username) => username.value().to_string(),
-        None => return Err(WebappError::NotLoggedInError),
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
     };
     let mut conn = state.pool.clone().get()?;
-    let user = users::table
-        .filter(users::username.eq(&username))
-        .first::<User>(&mut conn)?;
-    let goals = Goal::belonging_to(&user).load::<Goal>(&mut conn)?;
+    let goals = goals::table
+        .select(Goal::as_select())
+        .filter(goals::user_id.eq(user_context.user_id))
+        .load(&mut conn)?;
 
     let mut context = tera::Context::new();
     context.insert("goals", &goals);
@@ -76,24 +75,20 @@ pub async fn hx_get_new_goal(State(tera): State<tera::Tera>) -> Result<Response,
 }
 
 pub async fn hx_post_new_goal(
-    jar: PrivateCookieJar,
+    Extension(user_context): Extension<Option<UserContext>>,
     State(state): State<AppState>,
     Form(goal_form): Form<GoalForm>,
 ) -> Result<Response, WebappError> {
-    let username = match jar.get("username") {
-        Some(username) => username.value().to_string(),
-        None => return Err(WebappError::NotLoggedInError),
+    let Some(user_context) = user_context else {
+        return Err(WebappError::NotLoggedInError);
     };
     let mut conn = state.pool.clone().get()?;
-    let user = users::table
-        .filter(users::username.eq(&username))
-        .first::<User>(&mut conn)?;
 
-    let mut context = GoalContext {
+    let mut goal_context = GoalContext {
         conn: &mut conn,
         current_title: None,
     };
-    let alert = validate_goal_form_extract_alert(&goal_form, &mut context);
+    let alert = validate_goal_form_extract_alert(&goal_form, &mut goal_context);
 
     if let Some(alert) = alert {
         return Ok(Html(alert).into_response());
@@ -103,7 +98,7 @@ pub async fn hx_post_new_goal(
         title: goal_form.title,
         description: goal_form.description,
         notes: goal_form.notes,
-        user_id: user.id,
+        user_id: user_context.user_id,
     };
 
     let _goal = create_new_goal(&new_goal, &mut conn)?;
