@@ -12,6 +12,7 @@ use std::str::FromStr;
 use url::Url;
 use validator::{Validate, ValidationErrorsKind};
 
+pub mod applied_goal;
 pub mod calendar;
 pub mod goal;
 pub mod middleware;

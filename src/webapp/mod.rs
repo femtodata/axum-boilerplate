@@ -144,6 +144,10 @@ pub async fn run_server() {
         .route("/goals/{id}", delete(handlers::goal::hx_delete_goal))
         .route("/goals/{id}/edit", get(handlers::goal::hx_get_edit_goal))
         .route(
+            "/applied-goals/new",
+            get(handlers::applied_goal::hx_get_new_applied_goal),
+        )
+        .route(
             "/calendar/month/content",
             get(handlers::calendar::hx_get_calendar_month_content),
         )
