@@ -13,7 +13,13 @@
 </div>
 <form>
   <div class="modal-body">
-    body
+    <label for="goal-select" class="form-label">Please select a goal</label>
+    <select id="goal-select" class="form-select" aria-label="Goal select">
+      <option hidden disabled selected value> --- </option>
+      {% for goal in goals %}
+        <option value="{{ goal.id }}">{{ goal.title }}</option>
+      {% endfor %}
+    </select>
   </div>
   <div class="model-footer">
     footer
